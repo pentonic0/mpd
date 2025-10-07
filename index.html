@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <title>Vibrant Video Player</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>StreamFlow Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,13 +13,8 @@
       --gradient-start: #6dd5ed;
       --gradient-mid: #2193b0;
       --gradient-end: #007bff;
-      --form-bg-color: rgba(255, 255, 255, 0.1);
+      --header-bg: rgba(0, 0, 0, 0.7);
       --text-color-light: #f0f0f0;
-      --text-color-dark: #333;
-      --input-border-color: rgba(255, 255, 255, 0.3);
-      --input-focus-border: #8aff8a;
-      --button-gradient-start: #a7a6cb;
-      --button-gradient-end: #8989ba;
       --server-button-bg: rgba(255, 255, 255, 0.15);
       --server-button-hover: rgba(255, 255, 255, 0.25);
       --server-button-active: rgba(138, 255, 138, 0.3);
@@ -39,285 +32,286 @@
       background-size: 400% 400%;
       animation: backgroundGradient 15s ease infinite;
       color: var(--text-color-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       min-height: 100vh;
-      overflow: hidden;
-      transition: background 0.5s ease;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
     }
 
     @keyframes backgroundGradient {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
-    /* State for when video is playing */
-    body.playing #player-ui {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.9) translateY(-20px);
-    }
-
-    body.playing #player-container {
-      opacity: 1;
-      pointer-events: auto;
-      width: 100%;
-      height: 100%;
-    }
-
-    .container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    
-    #player-ui {
-      background: var(--form-bg-color);
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-      padding: 40px;
+    header {
+      background: var(--header-bg);
+      padding: 20px;
       text-align: center;
-      width: 90%;
-      max-width: 550px;
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10;
     }
 
-    #player-ui h1 {
+    header h1 {
       font-size: 2.5rem;
       font-weight: 700;
-      margin-bottom: 10px;
-      color: var(--text-color-light);
+      margin-bottom: 8px;
       text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
     }
-    
-    #player-ui .announcement {
-      margin-bottom: 35px;
-      color: rgba(255, 255, 255, 0.8);
+
+    header p {
       font-size: 1rem;
-      line-height: 1.6;
-      font-weight: 400;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
     }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.6rem;
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: var(--text-color-light);
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    input[type="text"] {
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
       width: 100%;
-      padding: 14px 18px;
-      box-sizing: border-box;
-      border: 1px solid var(--input-border-color);
-      border-radius: 10px;
-      font-size: 1.05rem;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: var(--text-color-light);
-      transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-    }
-
-    input[type="text"]::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-      border-color: var(--input-focus-border);
-      background-color: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 3px rgba(138, 255, 138, 0.3);
-    }
-
-    input[type="button"] {
-      background: linear-gradient(45deg, var(--button-gradient-start), var(--button-gradient-end));
-      color: white;
-      cursor: pointer;
-      font-size: 1.2rem;
-      font-weight: 700;
-      padding: 15px 25px;
-      border: none;
-      border-radius: 10px;
-      width: 100%;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      margin-top: 20px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    input[type="button"]:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
     }
 
     #player-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        pointer-events: none;
-        background-color: #000;
-        transition: opacity 0.7s ease;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    /* Ensure JWPlayer fills the container */
-    #player-container .jwplayer {
-        position: absolute !important;
-        width: 100% !important;
-        height: calc(100% - 70px) !important;
-        top: 0;
-    }
-    
-    /* Server selection panel */
-    #server-panel {
-      position: absolute;
-      bottom: 0;
-      left: 0;
       width: 100%;
-      height: 70px;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      overflow-x: auto;
+      height: 0;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      position: relative;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    #player-container .jwplayer {
+      position: absolute !important;
+      width: 100% !important;
+      height: 100% !important;
+      top: 0;
+      left: 0;
+    }
+
+    .servers-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .servers-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .servers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 15px;
     }
-    
+
     .server-button {
       background: var(--server-button-bg);
       color: var(--text-color-light);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      padding: 8px 15px;
+      border-radius: 10px;
+      padding: 15px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 1rem;
       font-weight: 600;
       transition: all 0.3s ease;
-      white-space: nowrap;
-      flex-shrink: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
     }
-    
+
     .server-button:hover {
       background: var(--server-button-hover);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
-    
+
     .server-button.active {
       background: var(--server-button-active);
-      border-color: var(--input-focus-border);
-      box-shadow: 0 0 8px rgba(138, 255, 138, 0.5);
+      border-color: #8aff8a;
+      box-shadow: 0 0 12px rgba(138, 255, 138, 0.5);
     }
-    
-    #back-button {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
+
+    .server-icon {
+      font-size: 1.5rem;
+    }
+
+    .server-info {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+
+    .quality-indicator {
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      gap: 5px;
+      font-size: 0.8rem;
     }
-    
-    body.playing #back-button {
-      opacity: 1;
+
+    .quality-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .quality-high {
+      background: #4CAF50;
+    }
+
+    .quality-medium {
+      background: #FFC107;
+    }
+
+    .quality-low {
+      background: #F44336;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      margin-top: 20px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .servers-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+      
+      .main-container {
+        padding: 15px;
+        gap: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 1.7rem;
+      }
+      
+      header p {
+        font-size: 0.9rem;
+      }
+      
+      .servers-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
   </style>
 </head>
 
 <body>
+  <header>
+    <h1>StreamFlow Player</h1>
+    <p>Select a server below to start streaming your favorite content</p>
+  </header>
 
-  <div class="container">
-    <div id="player-ui">
-      <h1>StreamFlow Player</h1>
-      <div class="announcement">
-        Immerse yourself in content. Simply enter your DASH or HLS stream URL. Key IDs and Keys are optional for DRM-protected streams.
+  <div class="main-container">
+    <div id="player-container"></div>
+
+    <div class="servers-section">
+      <h2>Available Streaming Servers</h2>
+      <div class="servers-grid" id="servers-grid">
+        <!-- Server buttons will be generated by JavaScript -->
       </div>
-      <form id="videoForm" onsubmit="event.preventDefault(); playVideo();">
-        <div class="form-group">
-          <label for="manifest">Stream URL</label>
-          <input type="text" id="manifest" name="manifest" placeholder="e.g., https://example.com/stream.mpd" required>
-        </div>
-        <div class="form-group">
-          <label for="keyId">Key ID (Optional)</label>
-          <input type="text" id="keyId" name="keyId" placeholder="For DRM streams (KID)">
-        </div>
-        <div class="form-group">
-          <label for="key">Key (Optional)</label>
-          <input type="text" id="key" name="key" placeholder="For DRM streams (Key)">
-        </div>
-        <input type="button" value="Play Stream" onclick="playVideo()">
-      </form>
-    </div>
-
-    <div id="player-container">
-      <button id="back-button" onclick="goBackToUI()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div id="server-panel"></div>
     </div>
   </div>
+
+  <footer>
+    <p>StreamFlow Player &copy; 2023 | Powered by JW Player</p>
+  </footer>
 
   <script type="text/javascript">
     // Predefined servers with URLs and optional DRM keys
     const predefinedServers = [
       {
-        name: "Server 1",
+        name: "Main Server",
+        url: "https://cdn.jwplayer.com/manifests/pZxWPRg4.m3u8",
+        keyId: "",
+        key: "",
+        quality: "high",
+        location: "US East",
+        icon: "📺"
+      },
+      {
+        name: "Backup Server",
+        url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+        keyId: "",
+        key: "",
+        quality: "high",
+        location: "Europe",
+        icon: "🔄"
+      },
+      {
+        name: "Sports Stream",
+        url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        keyId: "",
+        key: "",
+        quality: "medium",
+        location: "Global",
+        icon: "⚽"
+      },
+      {
+        name: "Movie Server",
+        url: "https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8",
+        keyId: "",
+        key: "",
+        quality: "high",
+        location: "US West",
+        icon: "🎬"
+      },
+      {
+        name: "Documentary Server",
+        url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+        keyId: "",
+        key: "",
+        quality: "medium",
+        location: "Asia",
+        icon: "🌍"
+      },
+      {
+        name: "Music Stream",
+        url: "https://content.jwplayer.com/manifests/vM7nH0Kl.m3u8",
+        keyId: "",
+        key: "",
+        quality: "high",
+        location: "Global",
+        icon: "🎵"
+      },
+      {
+        name: "Sports",
         url: "https://live.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd",
         keyId: "a6dfc4f17d70d8d07639659193f03b25",
-        key: "893eacfabe386144b81733d622a7ad17"
-      },
-      {
-        name: "Server 2",
-        url: "https://example.com/stream2.m3u8",
-        keyId: "1234567890abcdef",
-        key: "abcdef1234567890"
-      },
-      {
-        name: "Server 3",
-        url: "https://example.com/stream3.mpd",
-        keyId: "",
-        key: ""
-      },
-      {
-        name: "Server 4",
-        url: "https://example.com/stream4.m3u8",
-        keyId: "fedcba0987654321",
-        key: "0987654321abcdef"
+        key: "893eacfabe386144b81733d622a7ad17",
+        quality: "high",
+        location: "Global",
+        icon: "🎵"
       }
+
+      
     ];
 
     let currentPlayer = null;
@@ -325,7 +319,6 @@
 
     /**
      * Waits for the JWPlayer library to be loaded before executing a callback.
-     * @param {function} callback - The function to execute once JWPlayer is ready.
      */
     function waitForJWPlayer(callback) {
       if (typeof jwplayer === 'function') {
@@ -336,85 +329,43 @@
     }
 
     /**
-     * Initiates the video playback process.
-     * It adds a 'playing' class to the body to trigger UI transitions.
-     */
-    function playVideo() {
-      const manifestInput = document.getElementById("manifest");
-      if (!manifestInput.value) {
-          alert("Please enter a stream URL.");
-          return;
-      }
-      document.body.classList.add("playing");
-
-      // Wait for the UI transition to start before setting up the player
-      setTimeout(() => {
-        waitForJWPlayer(() => {
-          setupVideoPlayer();
-          setupServerPanel();
-        });
-      }, 600); // Should match the longest transition duration
-    }
-
-    /**
-     * Gathers configuration from the form and sets up the JWPlayer instance.
-     */
-    function setupVideoPlayer() {
-      const manifestUrl = document.getElementById("manifest").value;
-      const keyId = document.getElementById("keyId").value;
-      const key = document.getElementById("key").value;
-
-      let streamType = '';
-      if (manifestUrl.includes('.mpd')) {
-        streamType = 'dash';
-      } else if (manifestUrl.includes('.m3u8')) {
-        streamType = 'hls';
-      }
-
-      const playerConfig = {
-        file: manifestUrl,
-        autostart: true,
-        width: "100%",
-        height: "100%",
-        stretching: "uniform",
-      };
-      
-      if (streamType) {
-          playerConfig.type = streamType;
-      }
-
-      // Add DRM settings only if both keyId and key are provided
-      if (keyId && key) {
-        playerConfig.drm = {
-          clearkey: {
-            keyId: keyId,
-            key: key,
-          },
-        };
-      }
-
-      // Remove existing player if it exists
-      if (currentPlayer) {
-        currentPlayer.remove();
-      }
-      
-      currentPlayer = jwplayer("player-container").setup(playerConfig);
-      currentServerIndex = -1; // Custom server, not predefined
-    }
-
-    /**
      * Sets up the server selection panel with predefined servers
      */
     function setupServerPanel() {
-      const serverPanel = document.getElementById("server-panel");
-      serverPanel.innerHTML = '';
+      const serversGrid = document.getElementById("servers-grid");
+      serversGrid.innerHTML = '';
       
       predefinedServers.forEach((server, index) => {
-        const button = document.createElement("button");
+        const button = document.createElement("div");
         button.className = "server-button";
-        button.textContent = server.name;
+        if (index === currentServerIndex) {
+          button.classList.add("active");
+        }
+        
+        // Create quality indicator
+        let qualityClass = "quality-high";
+        let qualityText = "High Quality";
+        
+        if (server.quality === "medium") {
+          qualityClass = "quality-medium";
+          qualityText = "Medium Quality";
+        } else if (server.quality === "low") {
+          qualityClass = "quality-low";
+          qualityText = "Low Quality";
+        }
+        
+        button.innerHTML = `
+          <div class="server-icon">${server.icon}</div>
+          <div>${server.name}</div>
+          <div class="server-info">${server.location}</div>
+          <div class="quality-indicator">
+            <div class="quality-dot ${qualityClass}"></div>
+            <span>${qualityText}</span>
+          </div>
+        `;
+        
         button.onclick = () => switchToServer(index);
-        serverPanel.appendChild(button);
+        serversGrid.appendChild(button);
       });
     }
 
@@ -424,11 +375,6 @@
      */
     function switchToServer(index) {
       const server = predefinedServers[index];
-      
-      // Update form fields
-      document.getElementById("manifest").value = server.url;
-      document.getElementById("keyId").value = server.keyId || "";
-      document.getElementById("key").value = server.key || "";
       
       // Update active server button
       const serverButtons = document.querySelectorAll(".server-button");
@@ -482,43 +428,19 @@
     }
 
     /**
-     * Returns to the main UI
+     * Initialize the page - set up the server panel and auto-play the first server
      */
-    function goBackToUI() {
-      document.body.classList.remove("playing");
+    function initializePage() {
+      setupServerPanel();
       
-      // Stop the player
-      if (currentPlayer) {
-        currentPlayer.stop();
+      // Auto-play the first server
+      if (predefinedServers.length > 0) {
+        switchToServer(0);
       }
-      
-      // Clear active server button
-      const serverButtons = document.querySelectorAll(".server-button");
-      serverButtons.forEach(button => {
-        button.classList.remove("active");
-      });
     }
 
-    /**
-     * On page load, check for URL parameters to automatically play a video.
-     */
-    document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const fileUrl = urlParams.get('emmbed-url');
-      const kid = urlParams.get('kid');
-      const key = urlParams.get('key');
-
-      if (fileUrl) {
-        // Pre-fill the form fields from URL parameters
-        document.getElementById('manifest').value = fileUrl;
-        if (kid) document.getElementById('keyId').value = kid;
-        if (key) document.getElementById('key').value = key;
-        
-        // Automatically start playback
-        playVideo();
-      }
-    });
+    // Initialize the page when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initializePage);
   </script>
 </body>
-
 </html>
