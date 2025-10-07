@@ -14,14 +14,17 @@
     :root {
       --gradient-start: #6dd5ed;
       --gradient-mid: #2193b0;
-      --gradient-end: #007bff; /* A nice blue for accent */
+      --gradient-end: #007bff;
       --form-bg-color: rgba(255, 255, 255, 0.1);
       --text-color-light: #f0f0f0;
       --text-color-dark: #333;
       --input-border-color: rgba(255, 255, 255, 0.3);
-      --input-focus-border: #8aff8a; /* A bright green for focus */
+      --input-focus-border: #8aff8a;
       --button-gradient-start: #a7a6cb;
       --button-gradient-end: #8989ba;
+      --server-button-bg: rgba(255, 255, 255, 0.15);
+      --server-button-hover: rgba(255, 255, 255, 0.25);
+      --server-button-active: rgba(138, 255, 138, 0.3);
     }
 
     * {
@@ -81,7 +84,7 @@
     
     #player-ui {
       background: var(--form-bg-color);
-      backdrop-filter: blur(15px); /* Frosted glass effect */
+      backdrop-filter: blur(15px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
@@ -174,15 +177,81 @@
         height: 100%;
         opacity: 0;
         pointer-events: none;
-        background-color: #000; /* Black background behind the player */
+        background-color: #000;
         transition: opacity 0.7s ease;
+        display: flex;
+        flex-direction: column;
     }
     
     /* Ensure JWPlayer fills the container */
     #player-container .jwplayer {
         position: absolute !important;
         width: 100% !important;
-        height: 100% !important;
+        height: calc(100% - 70px) !important;
+        top: 0;
+    }
+    
+    /* Server selection panel */
+    #server-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      overflow-x: auto;
+      gap: 15px;
+    }
+    
+    .server-button {
+      background: var(--server-button-bg);
+      color: var(--text-color-light);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    
+    .server-button:hover {
+      background: var(--server-button-hover);
+      transform: translateY(-2px);
+    }
+    
+    .server-button.active {
+      background: var(--server-button-active);
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 8px rgba(138, 255, 138, 0.5);
+    }
+    
+    #back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    body.playing #back-button {
+      opacity: 1;
     }
   </style>
 </head>
@@ -212,11 +281,48 @@
       </form>
     </div>
 
-    <div id="player-container"></div>
+    <div id="player-container">
+      <button id="back-button" onclick="goBackToUI()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="server-panel"></div>
+    </div>
   </div>
 
-
   <script type="text/javascript">
+    // Predefined servers with URLs and optional DRM keys
+    const predefinedServers = [
+      {
+        name: "Server 1",
+        url: "https://live.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd",
+        keyId: "a6dfc4f17d70d8d07639659193f03b25",
+        key: "893eacfabe386144b81733d622a7ad17"
+      },
+      {
+        name: "Server 2",
+        url: "https://example.com/stream2.m3u8",
+        keyId: "1234567890abcdef",
+        key: "abcdef1234567890"
+      },
+      {
+        name: "Server 3",
+        url: "https://example.com/stream3.mpd",
+        keyId: "",
+        key: ""
+      },
+      {
+        name: "Server 4",
+        url: "https://example.com/stream4.m3u8",
+        keyId: "fedcba0987654321",
+        key: "0987654321abcdef"
+      }
+    ];
+
+    let currentPlayer = null;
+    let currentServerIndex = -1;
+
     /**
      * Waits for the JWPlayer library to be loaded before executing a callback.
      * @param {function} callback - The function to execute once JWPlayer is ready.
@@ -243,7 +349,10 @@
 
       // Wait for the UI transition to start before setting up the player
       setTimeout(() => {
-        waitForJWPlayer(setupVideoPlayer);
+        waitForJWPlayer(() => {
+          setupVideoPlayer();
+          setupServerPanel();
+        });
       }, 600); // Should match the longest transition duration
     }
 
@@ -284,7 +393,110 @@
         };
       }
 
-      jwplayer("player-container").setup(playerConfig);
+      // Remove existing player if it exists
+      if (currentPlayer) {
+        currentPlayer.remove();
+      }
+      
+      currentPlayer = jwplayer("player-container").setup(playerConfig);
+      currentServerIndex = -1; // Custom server, not predefined
+    }
+
+    /**
+     * Sets up the server selection panel with predefined servers
+     */
+    function setupServerPanel() {
+      const serverPanel = document.getElementById("server-panel");
+      serverPanel.innerHTML = '';
+      
+      predefinedServers.forEach((server, index) => {
+        const button = document.createElement("button");
+        button.className = "server-button";
+        button.textContent = server.name;
+        button.onclick = () => switchToServer(index);
+        serverPanel.appendChild(button);
+      });
+    }
+
+    /**
+     * Switches to a predefined server
+     * @param {number} index - Index of the server in predefinedServers array
+     */
+    function switchToServer(index) {
+      const server = predefinedServers[index];
+      
+      // Update form fields
+      document.getElementById("manifest").value = server.url;
+      document.getElementById("keyId").value = server.keyId || "";
+      document.getElementById("key").value = server.key || "";
+      
+      // Update active server button
+      const serverButtons = document.querySelectorAll(".server-button");
+      serverButtons.forEach((button, i) => {
+        if (i === index) {
+          button.classList.add("active");
+        } else {
+          button.classList.remove("active");
+        }
+      });
+      
+      // Setup player with new server
+      waitForJWPlayer(() => {
+        let streamType = '';
+        if (server.url.includes('.mpd')) {
+          streamType = 'dash';
+        } else if (server.url.includes('.m3u8')) {
+          streamType = 'hls';
+        }
+
+        const playerConfig = {
+          file: server.url,
+          autostart: true,
+          width: "100%",
+          height: "100%",
+          stretching: "uniform",
+        };
+        
+        if (streamType) {
+            playerConfig.type = streamType;
+        }
+
+        // Add DRM settings only if both keyId and key are provided
+        if (server.keyId && server.key) {
+          playerConfig.drm = {
+            clearkey: {
+              keyId: server.keyId,
+              key: server.key,
+            },
+          };
+        }
+
+        // Remove existing player if it exists
+        if (currentPlayer) {
+          currentPlayer.remove();
+        }
+        
+        currentPlayer = jwplayer("player-container").setup(playerConfig);
+        currentServerIndex = index;
+      });
+    }
+
+    /**
+     * Returns to the main UI
+     */
+    function goBackToUI() {
+      document.body.classList.remove("playing");
+      
+      // Stop the player
+      if (currentPlayer) {
+        currentPlayer.stop();
+      }
+      
+      // Clear active server button
+      const serverButtons = document.querySelectorAll(".server-button");
+      serverButtons.forEach(button => {
+        button.classList.remove("active");
+      });
     }
 
     /**
