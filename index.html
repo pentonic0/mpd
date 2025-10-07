@@ -6,21 +6,20 @@
   <title>Vibrant Video Player</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- DASH.js library for MPD stream support -->
-  <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
   <style>
     :root {
       --gradient-start: #6dd5ed;
       --gradient-mid: #2193b0;
-      --gradient-end: #007bff;
+      --gradient-end: #007bff; /* A nice blue for accent */
       --form-bg-color: rgba(255, 255, 255, 0.1);
       --text-color-light: #f0f0f0;
       --text-color-dark: #333;
       --input-border-color: rgba(255, 255, 255, 0.3);
-      --input-focus-border: #8aff8a;
+      --input-focus-border: #8aff8a; /* A bright green for focus */
       --button-gradient-start: #a7a6cb;
       --button-gradient-end: #8989ba;
     }
@@ -82,7 +81,7 @@
     
     #player-ui {
       background: var(--form-bg-color);
-      backdrop-filter: blur(15px);
+      backdrop-filter: blur(15px); /* Frosted glass effect */
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
@@ -175,63 +174,15 @@
         height: 100%;
         opacity: 0;
         pointer-events: none;
-        background-color: #000;
+        background-color: #000; /* Black background behind the player */
         transition: opacity 0.7s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
     }
     
-    #video-wrapper {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    #native-video-player {
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-    }
-    
-    #back-button {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        z-index: 10;
-        transition: background 0.3s ease;
-    }
-    
-    #back-button:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-    
-    .error-message {
-        color: #ff6b6b;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 20px;
-        text-align: center;
-        max-width: 80%;
-    }
-    
-    .format-info {
-        margin-top: 15px;
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.7);
+    /* Ensure JWPlayer fills the container */
+    #player-container .jwplayer {
+        position: absolute !important;
+        width: 100% !important;
+        height: 100% !important;
     }
   </style>
 </head>
@@ -242,11 +193,11 @@
     <div id="player-ui">
       <h1>StreamFlow Player</h1>
       <div class="announcement">
-        Immerse yourself in content. Enter your MPD (DASH) stream URL. For DRM-protected streams, provide Key ID and Key if available.
+        Immerse yourself in content. Simply enter your DASH or HLS stream URL. Key IDs and Keys are optional for DRM-protected streams.
       </div>
       <form id="videoForm" onsubmit="event.preventDefault(); playVideo();">
         <div class="form-group">
-          <label for="manifest">MPD Stream URL</label>
+          <label for="manifest">Stream URL</label>
           <input type="text" id="manifest" name="manifest" placeholder="e.g., https://example.com/stream.mpd" required>
         </div>
         <div class="form-group">
@@ -259,24 +210,28 @@
         </div>
         <input type="button" value="Play Stream" onclick="playVideo()">
       </form>
-      <div class="format-info">
-        This player supports MPD (DASH) streams using the browser's native video player with DASH.js library.
-      </div>
     </div>
 
-    <div id="player-container">
-      <button id="back-button" onclick="goBack()">← Back to Input</button>
-      <div id="video-wrapper">
-        <video id="native-video-player" controls data-dashjs-player></video>
-      </div>
-    </div>
+    <div id="player-container"></div>
   </div>
 
+
   <script type="text/javascript">
-    let player; // Store reference to the DASH player
-    
+    /**
+     * Waits for the JWPlayer library to be loaded before executing a callback.
+     * @param {function} callback - The function to execute once JWPlayer is ready.
+     */
+    function waitForJWPlayer(callback) {
+      if (typeof jwplayer === 'function') {
+        callback();
+      } else {
+        setTimeout(() => waitForJWPlayer(callback), 100);
+      }
+    }
+
     /**
      * Initiates the video playback process.
+     * It adds a 'playing' class to the body to trigger UI transitions.
      */
     function playVideo() {
       const manifestInput = document.getElementById("manifest");
@@ -284,127 +239,52 @@
           alert("Please enter a stream URL.");
           return;
       }
-      
-      // Validate URL format
-      if (!manifestInput.value.includes('.mpd')) {
-          alert("Please enter a valid MPD stream URL (should end with .mpd)");
-          return;
-      }
-      
       document.body.classList.add("playing");
 
-      // Wait for the UI transition before setting up the player
+      // Wait for the UI transition to start before setting up the player
       setTimeout(() => {
-        setupVideoPlayer();
-      }, 600);
+        waitForJWPlayer(setupVideoPlayer);
+      }, 600); // Should match the longest transition duration
     }
 
     /**
-     * Gathers configuration from the form and sets up the DASH player.
+     * Gathers configuration from the form and sets up the JWPlayer instance.
      */
     function setupVideoPlayer() {
       const manifestUrl = document.getElementById("manifest").value;
       const keyId = document.getElementById("keyId").value;
       const key = document.getElementById("key").value;
-      const videoPlayer = document.getElementById("native-video-player");
-      
-      try {
-        // Initialize DASH player
-        if (player) {
-          player.reset();
-        }
-        
-        player = dashjs.MediaPlayer().create();
-        
-        // Configure player
-        player.updateSettings({
-          streaming: {
-            delay: {
-              liveDelay: 5
-            }
-          }
-        });
-        
-        // Set up DRM if credentials provided
-        if (keyId && key) {
-          player.setProtectionData({
-            'org.w3.clearkey': {
-              'clearkeys': {
-                [keyId]: key
-              }
-            }
-          });
-        }
-        
-        // Initialize player with the MPD stream
-        player.initialize(videoPlayer, manifestUrl, true);
-        
-        // Handle player errors
-        player.on(dashjs.MediaPlayer.events.ERROR, function(event) {
-          console.error("DASH Player Error:", event);
-          showError("Error playing stream. Please check the URL and try again.");
-        });
-        
-        // Handle successful stream load
-        player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, function() {
-          console.log("Stream initialized successfully");
-        });
-        
-      } catch (error) {
-        console.error("Error setting up DASH player:", error);
-        showError("Error setting up player: " + error.message);
-      }
-    }
 
-    /**
-     * Shows an error message in the player container
-     */
-    function showError(message) {
-      const playerContainer = document.getElementById("player-container");
-      
-      // Remove any existing error message
-      const existingError = document.querySelector('.error-message');
-      if (existingError) {
-        existingError.remove();
+      let streamType = '';
+      if (manifestUrl.includes('.mpd')) {
+        streamType = 'dash';
+      } else if (manifestUrl.includes('.m3u8')) {
+        streamType = 'hls';
       }
-      
-      // Create and display new error message
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'error-message';
-      errorDiv.textContent = message;
-      playerContainer.appendChild(errorDiv);
-      
-      // Auto-remove error after 5 seconds
-      setTimeout(() => {
-        if (errorDiv.parentNode) {
-          errorDiv.remove();
-        }
-      }, 5000);
-    }
 
-    /**
-     * Returns to the input form
-     */
-    function goBack() {
-      // Destroy DASH player if it exists
-      if (player) {
-        player.reset();
-        player = null;
+      const playerConfig = {
+        file: manifestUrl,
+        autostart: true,
+        width: "100%",
+        height: "100%",
+        stretching: "uniform",
+      };
+      
+      if (streamType) {
+          playerConfig.type = streamType;
       }
-      
-      // Reset video element
-      const videoPlayer = document.getElementById("native-video-player");
-      videoPlayer.pause();
-      videoPlayer.src = "";
-      
-      // Remove any error messages
-      const errorDiv = document.querySelector('.error-message');
-      if (errorDiv) {
-        errorDiv.remove();
+
+      // Add DRM settings only if both keyId and key are provided
+      if (keyId && key) {
+        playerConfig.drm = {
+          clearkey: {
+            keyId: keyId,
+            key: key,
+          },
+        };
       }
-      
-      // Return to form view
-      document.body.classList.remove("playing");
+
+      jwplayer("player-container").setup(playerConfig);
     }
 
     /**
