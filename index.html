@@ -1,446 +1,866 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>StreamFlow Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --gradient-start: #6dd5ed;
-      --gradient-mid: #2193b0;
-      --gradient-end: #007bff;
-      --header-bg: rgba(0, 0, 0, 0.7);
-      --text-color-light: #f0f0f0;
-      --server-button-bg: rgba(255, 255, 255, 0.15);
-      --server-button-hover: rgba(255, 255, 255, 0.25);
-      --server-button-active: rgba(138, 255, 138, 0.3);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced M3U8 & MPD Live Stream Player</title>
+    
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HLS.js for M3U8 playback -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <!-- JW Player for MPD playback -->
+    <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
+    
+    <!-- Google Fonts for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <!-- Font Awesome for modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Custom CSS for player aesthetics -->
+    <style>
+        :root {
+            --player-theme: #6d28d9; /* Deep Violet */
+            --player-theme-hover: #5b21b6;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+        }
+        /* Hide default video controls */
+        video::-webkit-media-controls { display: none !important; }
+        video::-webkit-media-controls-enclosure { display: none !important; }
 
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
-      background-size: 400% 400%;
-      animation: backgroundGradient 15s ease infinite;
-      color: var(--text-color-light);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
+        /* Custom styles for range inputs (volume/progress) */
+        .slider-track {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100%;
+        }
+        .slider-track:focus {
+            outline: none;
+        }
 
-    @keyframes backgroundGradient {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+        /* Track */
+        .slider-track::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: height 0.2s ease;
+        }
+        .slider-track::-moz-range-track {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: height 0.2s ease;
+        }
+        .video-container:hover .slider-track::-webkit-slider-runnable-track,
+        .progress-bar-container:hover .slider-track::-webkit-slider-runnable-track {
+            height: 8px;
+        }
 
-    header {
-      background: var(--header-bg);
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 10;
-    }
+        /* Thumb */
+        .slider-track::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px; /* Adjust to center */
+            background-color: var(--player-theme);
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            transform: scale(0);
+            transition: transform 0.2s ease-in-out;
+        }
+        .slider-track::-moz-range-thumb {
+            background-color: var(--player-theme);
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            transform: scale(0);
+            transition: transform 0.2s ease-in-out;
+        }
 
-    header h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-    }
+        .video-container:hover .slider-track::-webkit-slider-thumb,
+        .progress-bar-container:hover .slider-track::-webkit-slider-thumb,
+        .slider-track:focus::-webkit-slider-thumb {
+            transform: scale(1);
+        }
 
-    header p {
-      font-size: 1rem;
-      opacity: 0.9;
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.5;
-    }
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: var(--player-theme);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-    .main-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      gap: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    #player-container {
-      width: 100%;
-      height: 0;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
-      position: relative;
-      background-color: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    #player-container .jwplayer {
-      position: absolute !important;
-      width: 100% !important;
-      height: 100% !important;
-      top: 0;
-      left: 0;
-    }
-
-    .servers-section {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .servers-section h2 {
-      font-size: 1.5rem;
-      margin-bottom: 15px;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .servers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-    }
-
-    .server-button {
-      background: var(--server-button-bg);
-      color: var(--text-color-light);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      padding: 15px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .server-button:hover {
-      background: var(--server-button-hover);
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .server-button.active {
-      background: var(--server-button-active);
-      border-color: #8aff8a;
-      box-shadow: 0 0 12px rgba(138, 255, 138, 0.5);
-    }
-
-    .server-icon {
-      font-size: 1.5rem;
-    }
-
-    .server-info {
-      font-size: 0.85rem;
-      opacity: 0.8;
-      font-weight: 400;
-    }
-
-    .quality-indicator {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.8rem;
-    }
-
-    .quality-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
-    .quality-high {
-      background: #4CAF50;
-    }
-
-    .quality-medium {
-      background: #FFC107;
-    }
-
-    .quality-low {
-      background: #F44336;
-    }
-
-    footer {
-      text-align: center;
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.5);
-      margin-top: 20px;
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      header h1 {
-        font-size: 2rem;
-      }
-      
-      .servers-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      }
-      
-      .main-container {
-        padding: 15px;
-        gap: 15px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      header h1 {
-        font-size: 1.7rem;
-      }
-      
-      header p {
-        font-size: 0.9rem;
-      }
-      
-      .servers-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-  </style>
+        .control-btn {
+            color: white;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .control-btn:hover {
+            color: var(--player-theme);
+            transform: scale(1.1);
+        }
+        
+        /* Server list styles */
+        .server-btn {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            transition: all 0.2s ease;
+        }
+        .server-btn:hover {
+            background-color: #334155;
+            border-color: var(--player-theme);
+        }
+        .server-btn.active {
+            background-color: var(--player-theme);
+            border-color: var(--player-theme);
+        }
+        
+        /* New server card styles */
+        .server-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(109, 40, 217, 0.2);
+            border-color: var(--player-theme);
+        }
+        .server-card.active {
+            border-color: var(--player-theme);
+            box-shadow: 0 0 0 2px var(--player-theme), 0 10px 25px rgba(109, 40, 217, 0.3);
+        }
+        .server-card-header {
+            background: rgba(109, 40, 217, 0.1);
+            border-bottom: 1px solid #334155;
+        }
+        .quality-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--player-theme);
+        }
+        .server-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        .server-status.offline {
+            background: #ef4444;
+        }
+        
+        /* Delete button styles - always visible */
+        .delete-server-btn {
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+        .delete-server-btn:hover {
+            color: #ef4444 !important;
+            transform: scale(1.1);
+        }
+        
+        /* Play button for predefined servers */
+        .play-indicator {
+            color: #6d28d9;
+        }
+        
+        /* Improved Volume Slider Styles */
+        .volume-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .volume-slider-container {
+            position: relative;
+            width: 0;
+            overflow: hidden;
+            transition: width 0.3s ease;
+            margin-left: 8px;
+        }
+        
+        .volume-container:hover .volume-slider-container {
+            width: 100px;
+        }
+        
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 5px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--player-theme);
+            cursor: pointer;
+            border: 2px solid white;
+            transition: all 0.2s ease;
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--player-theme);
+            cursor: pointer;
+            border: 2px solid white;
+            transition: all 0.2s ease;
+        }
+        
+        .volume-slider:hover {
+            height: 8px;
+        }
+        
+        .volume-slider:hover::-webkit-slider-thumb {
+            transform: scale(1.2);
+        }
+        
+        .volume-slider:hover::-moz-range-thumb {
+            transform: scale(1.2);
+        }
+        
+        .volume-level-indicator {
+            position: absolute;
+            height: 5px;
+            background: var(--player-theme);
+            border-radius: 5px;
+            pointer-events: none;
+            transition: height 0.2s ease;
+        }
+        
+        .volume-container:hover .volume-level-indicator {
+            height: 8px;
+        }
+        
+        /* MPD Player Styles */
+        #mpd-player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: none;
+        }
+        
+        #mpd-player {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #back-to-servers {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        #back-to-servers:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: translateX(-3px);
+        }
+        
+        .server-type-badge {
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #3b82f6;
+            margin-left: 5px;
+        }
+        
+        .server-type-badge.mpd {
+            background: #10b981;
+        }
+        
+        .server-type-badge.m3u8 {
+            background: #8b5cf6;
+        }
+    </style>
 </head>
+<body class="bg-slate-900 text-white flex flex-col items-center justify-center min-h-screen p-4 md:p-6">
 
-<body>
-  <header>
-    <h1>StreamFlow Player</h1>
-    <p>Select a server below to start streaming your favorite content</p>
-  </header>
+    <div class="w-full max-w-6xl mx-auto">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-5xl font-bold tracking-tight">Live TV</h1>
+            <p class="text-slate-400 mt-2 text-sm md:text-base">Select a server to begin streaming.</p>
+        </div>
+        
+        <!-- Video Player Container for M3U8 -->
+        <div id="video-container" class="video-container w-full bg-black rounded-xl shadow-2xl shadow-slate-900/50 overflow-hidden relative group aspect-video">
+            <video id="video-player" class="w-full h-full" playsinline></video>
 
-  <div class="main-container">
-    <div id="player-container"></div>
+            <!-- Loading Indicator -->
+            <div id="loading-spinner" class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-30">
+                <div class="loader"></div>
+            </div>
+            
+            <!-- Center Play/Pause Overlay -->
+            <div id="center-play-pause" class="absolute inset-0 flex items-center justify-center z-10 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+            </div>
+            
+            <!-- Custom Controls -->
+            <div id="controls-container" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-2 sm:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                <!-- Progress Bar -->
+                <div class="relative mb-2 progress-bar-container group/progress">
+                    <input id="progress-bar" type="range" min="0" max="100" value="0" class="slider-track w-full">
+                    <div id="live-indicator" class="absolute right-0 -bottom-6 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded hidden">LIVE</div>
+                </div>
 
-    <div class="servers-section">
-      <h2>Available Streaming Servers</h2>
-      <div class="servers-grid" id="servers-grid">
-        <!-- Server buttons will be generated by JavaScript -->
-      </div>
+                <!-- Bottom Controls -->
+                <div class="flex items-center justify-between">
+                    <!-- Left Controls -->
+                    <div class="flex items-center gap-3 sm:gap-4">
+                        <button id="play-pause-btn" title="Play/Pause (space)" class="control-btn"><i id="play-pause-icon" class="fa-solid fa-play text-xl"></i></button>
+                        <div class="volume-container">
+                            <button id="mute-btn" title="Mute (m)" class="control-btn"><i id="volume-icon" class="fa-solid fa-volume-high text-xl"></i></button>
+                            <div class="volume-slider-container">
+                                <div id="volume-level-indicator" class="volume-level-indicator"></div>
+                                <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="1" class="volume-slider">
+                            </div>
+                        </div>
+                        <div class="time-display text-xs sm:text-sm font-semibold">
+                            <span id="current-time">00:00</span> / <span id="duration">00:00</span>
+                        </div>
+                    </div>
+                    <!-- Right Controls -->
+                    <div class="flex items-center gap-3 sm:gap-4">
+                        <button id="fullscreen-btn" title="Fullscreen (f)" class="control-btn"><i id="fullscreen-icon" class="fa-solid fa-expand text-xl"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MPD Player Container (Hidden by default) -->
+        <div id="mpd-player-container">
+            <button id="back-to-servers">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Servers
+            </button>
+            <div id="mpd-player"></div>
+        </div>
+        
+        <!-- Server Selection Section -->
+        <div class="mt-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Available Servers</h2>
+                    <p class="text-slate-400 mt-1 text-sm">Select a server to start streaming instantly</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+                    <div class="relative flex-grow">
+                        <input id="new-server-input" type="text" placeholder="Enter M3U8 or MPD URL to add server" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-violet-500 transition shadow-sm placeholder-slate-500">
+                        <i class="fa-solid fa-link absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
+                    </div>
+                    <button id="add-server-btn" class="bg-violet-700 hover:bg-violet-600 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-violet-500/30">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add Server</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="server-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Server cards will be dynamically added here -->
+            </div>
+            
+            <!-- Empty state when no servers available -->
+            <div id="empty-state" class="text-center py-12 hidden">
+                <div class="bg-slate-800/50 rounded-2xl p-8 max-w-md mx-auto">
+                    <i class="fa-solid fa-satellite-dish text-5xl text-slate-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">No servers available</h3>
+                    <p class="text-slate-400 mb-6">Add a server using the form above to get started.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <footer>
-    <p>StreamFlow Player &copy; 2023 | Powered by JW Player</p>
-  </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Predefined server list
+            const predefinedServers = [
+                // M3U8 servers
+                { name: "Server 2", url: "https://premierleagpl23.akamaized.net/hls/live/2107108/TapSerie-1@2025/level_1.m3u8", quality: "SD", status: "online", type: "m3u8" },
+                { name: "Star Sports 1 HD", url: "http://41.205.93.154/STARSPORTS1/tracks-v1a1/mono.m3u8", quality: "HD", status: "online", type: "m3u8" },
+                { name: "Sony Sports 5", url: "http://stvlive.net:8080/sonyten5/index.m3u8", quality: "SD", status: "online", type: "m3u8" },
+                { name: "Sony Sports 1", url: "http://stvlive.net:8080/sonyten1/index.m3u8", quality: "SD", status: "online", type: "m3u8" },
+                { name: "Star Sports Select 1", url: "http://stvlive.net:8080/starselect1/index.m3u8", quality: "HD", status: "online", type: "m3u8" },
+                { name: "TSports", url: "http://stvlive.net:8080/tsports1/index.m3u8", quality: "HD", status: "online", type: "m3u8" },
+                { name: "Gazi TV", url: "http://stvlive.net:8080/gtv/index.m3u8", quality: "HD", status: "online", type: "m3u8" },
+                
+                // MPD servers
+                { 
+                    name: "Sports", 
+                    url: "https://live.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd", 
+                    keyId: "a6dfc4f17d70d8d07639659193f03b25", 
+                    key: "893eacfabe386144b81733d622a7ad17", 
+                    quality: "HD", 
+                    status: "online", 
+                    type: "mpd",
+                    location: "Global"
+                }
+            ];
+            
+            // DOM Elements
+            const video = document.getElementById('video-player');
+            const videoContainer = document.getElementById('video-container');
+            
+            const controlsContainer = document.getElementById('controls-container');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playPauseIcon = document.getElementById('play-pause-icon');
+            const centerPlayPause = document.getElementById('center-play-pause');
 
-  <script type="text/javascript">
-    // Predefined servers with URLs and optional DRM keys
-    const predefinedServers = [
-      {
-        name: "Main Server",
-        url: "https://cdn.jwplayer.com/manifests/pZxWPRg4.m3u8",
-        keyId: "",
-        key: "",
-        quality: "high",
-        location: "US East",
-        icon: "📺"
-      },
-      {
-        name: "Backup Server",
-        url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
-        keyId: "",
-        key: "",
-        quality: "high",
-        location: "Europe",
-        icon: "🔄"
-      },
-      {
-        name: "Sports Stream",
-        url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        keyId: "",
-        key: "",
-        quality: "medium",
-        location: "Global",
-        icon: "⚽"
-      },
-      {
-        name: "Movie Server",
-        url: "https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8",
-        keyId: "",
-        key: "",
-        quality: "high",
-        location: "US West",
-        icon: "🎬"
-      },
-      {
-        name: "Documentary Server",
-        url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
-        keyId: "",
-        key: "",
-        quality: "medium",
-        location: "Asia",
-        icon: "🌍"
-      },
-      {
-        name: "Music Stream",
-        url: "https://content.jwplayer.com/manifests/vM7nH0Kl.m3u8",
-        keyId: "",
-        key: "",
-        quality: "high",
-        location: "Global",
-        icon: "🎵"
-      },
-      {
-        name: "Sports",
-        url: "https://live.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd",
-        keyId: "a6dfc4f17d70d8d07639659193f03b25",
-        key: "893eacfabe386144b81733d622a7ad17",
-        quality: "high",
-        location: "Global",
-        icon: "🎵"
-      }
+            const muteBtn = document.getElementById('mute-btn');
+            const volumeIcon = document.getElementById('volume-icon');
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeLevelIndicator = document.getElementById('volume-level-indicator');
+            
+            const progressBar = document.getElementById('progress-bar');
+            const currentTimeEl = document.getElementById('current-time');
+            const durationEl = document.getElementById('duration');
+            const liveIndicator = document.getElementById('live-indicator');
+            
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const fullscreenIcon = document.getElementById('fullscreen-icon');
+            
+            const loadingSpinner = document.getElementById('loading-spinner');
+            
+            const serverList = document.getElementById('server-list');
+            const newServerInput = document.getElementById('new-server-input');
+            const addServerBtn = document.getElementById('add-server-btn');
+            const emptyState = document.getElementById('empty-state');
+            
+            // MPD Player Elements
+            const mpdPlayerContainer = document.getElementById('mpd-player-container');
+            const mpdPlayerElement = document.getElementById('mpd-player');
+            const backToServersBtn = document.getElementById('back-to-servers');
 
-      
-    ];
+            let hls;
+            let jwPlayer;
+            let controlsTimeout;
+            let customServers = [];
 
-    let currentPlayer = null;
-    let currentServerIndex = -1;
+            // Initialize server list
+            function initializeServerList() {
+                serverList.innerHTML = '';
+                
+                const allServers = [...predefinedServers, ...customServers];
+                
+                if (allServers.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    serverList.classList.add('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                    serverList.classList.remove('hidden');
+                    
+                    // Add predefined servers
+                    predefinedServers.forEach((server, index) => {
+                        addServerCard(server.name, server.url, server.quality, server.status, index, false, server.type, server.keyId, server.key, server.location);
+                    });
+                    
+                    // Add custom servers
+                    customServers.forEach((server, index) => {
+                        addServerCard(server.name, server.url, server.quality || "Custom", server.status || "online", predefinedServers.length + index, true, server.type);
+                    });
+                }
+            }
+            
+            // Add a server card to the list
+            function addServerCard(name, url, quality, status, index, isCustom = false, type = "m3u8", keyId = null, key = null, location = null) {
+                const card = document.createElement('div');
+                card.className = 'server-card rounded-xl p-4 cursor-pointer';
+                
+                // Determine server type badge
+                const typeBadge = type === "mpd" ? 
+                    '<span class="server-type-badge mpd">MPD</span>' : 
+                    '<span class="server-type-badge m3u8">M3U8</span>';
+                
+                card.innerHTML = `
+                    <div class="server-card-header p-3 -mx-4 -mt-4 mb-3 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="server-status ${status === 'online' ? '' : 'offline'}"></div>
+                            <span class="text-sm font-medium text-slate-300">${status === 'online' ? 'Online' : 'Offline'}</span>
+                            ${typeBadge}
+                        </div>
+                        <span class="quality-badge text-white text-xs font-semibold">${quality}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-white truncate">${name}</h3>
+                            ${location ? `<p class="text-xs text-slate-400 mt-1">${location}</p>` : ''}
+                        </div>
+                        <div class="flex items-center ml-2">
+                            ${isCustom ? 
+                                '<button class="delete-server-btn text-slate-400 hover:text-red-500 p-2 rounded-full transition-colors" title="Delete server">' +
+                                    '<i class="fa-solid fa-trash"></i>' +
+                                '</button>' : 
+                                '<i class="fa-solid fa-play play-indicator ml-2"></i>'
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.delete-server-btn')) {
+                        // Play this server based on type
+                        if (type === "mpd") {
+                            playMpdServer(url, keyId, key);
+                        } else {
+                            initializePlayer(url);
+                            
+                            // Show M3U8 player, hide MPD player
+                            videoContainer.classList.remove('hidden');
+                            mpdPlayerContainer.style.display = 'none';
+                        }
+                        
+                        // Update active state
+                        document.querySelectorAll('.server-card').forEach(card => {
+                            card.classList.remove('active');
+                        });
+                        card.classList.add('active');
+                    }
+                });
+                
+                // Add delete functionality for custom servers
+                if (isCustom) {
+                    const deleteBtn = card.querySelector('.delete-server-btn');
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Remove custom server
+                        customServers = customServers.filter(s => s.url !== url);
+                        saveCustomServers();
+                        initializeServerList();
+                    });
+                }
+                
+                serverList.appendChild(card);
+            }
+            
+            // Play MPD server using JW Player
+            function playMpdServer(url, keyId, key) {
+                // Hide M3U8 player, show MPD player
+                videoContainer.classList.add('hidden');
+                mpdPlayerContainer.style.display = 'block';
+                
+                // Setup JW Player
+                if (jwPlayer) {
+                    jwPlayer.remove();
+                }
+                
+                let streamType = '';
+                if (url.includes('.mpd')) {
+                    streamType = 'dash';
+                } else if (url.includes('.m3u8')) {
+                    streamType = 'hls';
+                }
 
-    /**
-     * Waits for the JWPlayer library to be loaded before executing a callback.
-     */
-    function waitForJWPlayer(callback) {
-      if (typeof jwplayer === 'function') {
-        callback();
-      } else {
-        setTimeout(() => waitForJWPlayer(callback), 100);
-      }
-    }
+                const playerConfig = {
+                    file: url,
+                    autostart: true,
+                    width: "100%",
+                    height: "100%",
+                    stretching: "uniform",
+                };
+                
+                if (streamType) {
+                    playerConfig.type = streamType;
+                }
 
-    /**
-     * Sets up the server selection panel with predefined servers
-     */
-    function setupServerPanel() {
-      const serversGrid = document.getElementById("servers-grid");
-      serversGrid.innerHTML = '';
-      
-      predefinedServers.forEach((server, index) => {
-        const button = document.createElement("div");
-        button.className = "server-button";
-        if (index === currentServerIndex) {
-          button.classList.add("active");
-        }
-        
-        // Create quality indicator
-        let qualityClass = "quality-high";
-        let qualityText = "High Quality";
-        
-        if (server.quality === "medium") {
-          qualityClass = "quality-medium";
-          qualityText = "Medium Quality";
-        } else if (server.quality === "low") {
-          qualityClass = "quality-low";
-          qualityText = "Low Quality";
-        }
-        
-        button.innerHTML = `
-          <div class="server-icon">${server.icon}</div>
-          <div>${server.name}</div>
-          <div class="server-info">${server.location}</div>
-          <div class="quality-indicator">
-            <div class="quality-dot ${qualityClass}"></div>
-            <span>${qualityText}</span>
-          </div>
-        `;
-        
-        button.onclick = () => switchToServer(index);
-        serversGrid.appendChild(button);
-      });
-    }
+                // Add DRM settings only if both keyId and key are provided
+                if (keyId && key) {
+                    playerConfig.drm = {
+                        clearkey: {
+                            keyId: keyId,
+                            key: key,
+                        },
+                    };
+                }
+                
+                jwPlayer = jwplayer("mpd-player").setup(playerConfig);
+            }
+            
+            // Back to server selection
+            function backToServerSelection() {
+                // Stop JW Player if playing
+                if (jwPlayer) {
+                    jwPlayer.stop();
+                }
+                
+                // Show M3U8 player, hide MPD player
+                videoContainer.classList.remove('hidden');
+                mpdPlayerContainer.style.display = 'none';
+            }
+            
+            // Save custom servers to localStorage
+            function saveCustomServers() {
+                localStorage.setItem('customServers', JSON.stringify(customServers));
+            }
+            
+            // Load custom servers from localStorage
+            function loadCustomServers() {
+                const saved = localStorage.getItem('customServers');
+                if (saved) {
+                    customServers = JSON.parse(saved);
+                }
+            }
+            
+            // Add a new custom server
+            function addCustomServer() {
+                const url = newServerInput.value.trim();
+                if (url && (url.includes('.m3u8') || url.includes('.mpd'))) {
+                    const name = `Custom Server ${customServers.length + 1}`;
+                    const type = url.includes('.mpd') ? 'mpd' : 'm3u8';
+                    
+                    customServers.push({ 
+                        name, 
+                        url, 
+                        quality: "Custom",
+                        status: "online",
+                        type: type
+                    });
+                    saveCustomServers();
+                    initializeServerList();
+                    newServerInput.value = '';
+                    
+                    // Auto-play the newly added server
+                    if (type === "mpd") {
+                        playMpdServer(url);
+                    } else {
+                        initializePlayer(url);
+                    }
+                    
+                    // Update active state
+                    setTimeout(() => {
+                        const cards = document.querySelectorAll('.server-card');
+                        if (cards.length > 0) {
+                            cards.forEach(card => card.classList.remove('active'));
+                            cards[cards.length - 1].classList.add('active');
+                        }
+                    }, 100);
+                } else {
+                    alert('Please enter a valid M3U8 or MPD URL');
+                }
+            }
 
-    /**
-     * Switches to a predefined server
-     * @param {number} index - Index of the server in predefinedServers array
-     */
-    function switchToServer(index) {
-      const server = predefinedServers[index];
-      
-      // Update active server button
-      const serverButtons = document.querySelectorAll(".server-button");
-      serverButtons.forEach((button, i) => {
-        if (i === index) {
-          button.classList.add("active");
-        } else {
-          button.classList.remove("active");
-        }
-      });
-      
-      // Setup player with new server
-      waitForJWPlayer(() => {
-        let streamType = '';
-        if (server.url.includes('.mpd')) {
-          streamType = 'dash';
-        } else if (server.url.includes('.m3u8')) {
-          streamType = 'hls';
-        }
+            // --- HLS Player Initialization ---
+            function initializePlayer(url) {
+                if (hls) hls.destroy();
+                
+                loadingSpinner.classList.remove('hidden');
+                
+                if (Hls.isSupported()) {
+                    hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        loadingSpinner.classList.add('hidden');
+                    });
+                    
+                    hls.on(Hls.Events.ERROR, (event, data) => {
+                        if (data.fatal) {
+                            switch(data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR: hls.startLoad(); break;
+                                case Hls.ErrorTypes.MEDIA_ERROR: hls.recoverMediaError(); break;
+                                default: hls.destroy(); break;
+                            }
+                        }
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = url;
+                    video.addEventListener('loadeddata', () => {
+                        loadingSpinner.classList.add('hidden');
+                    });
+                }
+                video.play().catch(e => console.error("Autoplay was prevented:", e));
+            }
 
-        const playerConfig = {
-          file: server.url,
-          autostart: true,
-          width: "100%",
-          height: "100%",
-          stretching: "uniform",
-        };
-        
-        if (streamType) {
-            playerConfig.type = streamType;
-        }
+            // --- UI & Controls Logic ---
+            const togglePlay = () => video.paused ? video.play() : video.pause();
 
-        // Add DRM settings only if both keyId and key are provided
-        if (server.keyId && server.key) {
-          playerConfig.drm = {
-            clearkey: {
-              keyId: server.keyId,
-              key: server.key,
-            },
-          };
-        }
+            const updatePlayPauseIcons = () => {
+                const isPaused = video.paused;
+                playPauseIcon.classList.toggle('fa-play', isPaused);
+                playPauseIcon.classList.toggle('fa-pause', !isPaused);
+            };
 
-        // Remove existing player if it exists
-        if (currentPlayer) {
-          currentPlayer.remove();
-        }
-        
-        currentPlayer = jwplayer("player-container").setup(playerConfig);
-        currentServerIndex = index;
-      });
-    }
+            const updateVolumeUI = () => {
+                volumeIcon.classList.remove('fa-volume-high', 'fa-volume-low', 'fa-volume-xmark');
+                if (video.muted || video.volume === 0) volumeIcon.classList.add('fa-volume-xmark');
+                else if (video.volume < 0.5) volumeIcon.classList.add('fa-volume-low');
+                else volumeIcon.classList.add('fa-volume-high');
+                
+                // Update volume level indicator
+                const volumePercent = video.muted ? 0 : video.volume * 100;
+                volumeLevelIndicator.style.width = `${volumePercent}%`;
+            };
+            
+            const handleVolumeChange = () => {
+                video.volume = volumeSlider.value;
+                video.muted = volumeSlider.value == 0;
+                updateVolumeUI();
+            };
 
-    /**
-     * Initialize the page - set up the server panel and auto-play the first server
-     */
-    function initializePage() {
-      setupServerPanel();
-      
-      // Auto-play the first server
-      if (predefinedServers.length > 0) {
-        switchToServer(0);
-      }
-    }
+            const toggleMute = () => {
+                video.muted = !video.muted;
+                volumeSlider.value = video.muted ? 0 : video.volume > 0 ? video.volume : 1;
+                handleVolumeChange();
+            };
+            
+            const formatTime = (timeInSeconds) => {
+                const result = new Date(timeInSeconds * 1000).toISOString().slice(11, 19);
+                return result.startsWith("00:") ? result.slice(3) : result;
+            };
+            
+            const updateProgress = () => {
+                const isLive = !isFinite(video.duration);
+                progressBar.closest('.progress-bar-container').classList.toggle('hidden', isLive);
+                liveIndicator.classList.toggle('hidden', !isLive);
+                durationEl.parentElement.classList.toggle('hidden', isLive);
 
-    // Initialize the page when DOM is loaded
-    document.addEventListener('DOMContentLoaded', initializePage);
-  </script>
+                if (!isLive) {
+                    const progressPercent = (video.currentTime / video.duration) * 100;
+                    progressBar.value = progressPercent;
+                    currentTimeEl.textContent = formatTime(video.currentTime);
+                    durationEl.textContent = formatTime(video.duration);
+                    progressBar.style.background = `linear-gradient(to right, var(--player-theme) ${progressPercent}%, rgba(255, 255, 255, 0.2) ${progressPercent}%)`;
+                } else {
+                    currentTimeEl.textContent = 'Live';
+                }
+            };
+
+            const seek = (e) => video.currentTime = (e.target.value / 100) * video.duration;
+            
+            const toggleFullscreen = () => {
+                if (!document.fullscreenElement) videoContainer.requestFullscreen().catch(err => console.error(err));
+                else document.exitFullscreen();
+            };
+            
+            const updateFullscreenIcons = () => {
+                const isFullscreen = !!document.fullscreenElement;
+                fullscreenIcon.classList.toggle('fa-expand', !isFullscreen);
+                fullscreenIcon.classList.toggle('fa-compress', isFullscreen);
+            };
+
+            const showControls = () => {
+                controlsContainer.style.opacity = 1;
+                videoContainer.style.cursor = 'default';
+                clearTimeout(controlsTimeout);
+                if (!video.paused) {
+                    controlsTimeout = setTimeout(() => {
+                        controlsContainer.style.opacity = 0;
+                        videoContainer.style.cursor = 'none';
+                    }, 3000);
+                }
+            }
+
+            // --- Event Listeners ---
+            addServerBtn.addEventListener('click', addCustomServer);
+            newServerInput.addEventListener('keypress', (e) => e.key === 'Enter' && addCustomServer());
+            
+            [playPauseBtn, centerPlayPause, video].forEach(el => el.addEventListener('click', togglePlay));
+            video.addEventListener('dblclick', toggleFullscreen);
+
+            video.addEventListener('play', updatePlayPauseIcons);
+            video.addEventListener('pause', updatePlayPauseIcons);
+            
+            muteBtn.addEventListener('click', toggleMute);
+            volumeSlider.addEventListener('input', handleVolumeChange);
+            video.addEventListener('volumechange', updateVolumeUI);
+            
+            video.addEventListener('timeupdate', updateProgress);
+            progressBar.addEventListener('input', seek);
+
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            document.addEventListener('fullscreenchange', updateFullscreenIcons);
+
+            video.addEventListener('waiting', () => loadingSpinner.classList.remove('hidden'));
+            video.addEventListener('playing', () => loadingSpinner.classList.add('hidden'));
+
+            videoContainer.addEventListener('mousemove', showControls);
+            videoContainer.addEventListener('mouseenter', showControls);
+            videoContainer.addEventListener('mouseleave', () => !video.paused && (controlsContainer.style.opacity = 0));
+            
+            // Back to servers button
+            backToServersBtn.addEventListener('click', backToServerSelection);
+            
+            document.addEventListener('keydown', e => {
+                if (e.target.tagName.toLowerCase() === 'input') return;
+                e.preventDefault();
+                switch (e.key.toLowerCase()) {
+                    case ' ': togglePlay(); break;
+                    case 'm': toggleMute(); break;
+                    case 'f': toggleFullscreen(); break;
+                    case 'arrowright': video.currentTime += 5; break;
+                    case 'arrowleft': video.currentTime -= 5; break;
+                    case 'escape': 
+                        if (mpdPlayerContainer.style.display === 'block') {
+                            backToServerSelection();
+                        }
+                        break;
+                }
+            });
+
+            // Initial UI state
+            loadCustomServers();
+            initializeServerList();
+            updatePlayPauseIcons();
+            updateVolumeUI();
+            showControls();
+            
+            // Auto-play the first server if available
+            if (predefinedServers.length > 0) {
+                setTimeout(() => {
+                    const firstServer = predefinedServers[0];
+                    if (firstServer.type === "mpd") {
+                        playMpdServer(firstServer.url, firstServer.keyId, firstServer.key);
+                    } else {
+                        initializePlayer(firstServer.url);
+                    }
+                    const firstCard = document.querySelector('.server-card');
+                    if (firstCard) firstCard.classList.add('active');
+                }, 500);
+            }
+        });
+    </script>
+
 </body>
 </html>
