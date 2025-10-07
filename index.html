@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vibrant Video Player</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- DASH.js library for MPD stream support -->
+  <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+  <style>
+    :root {
+      --gradient-start: #6dd5ed;
+      --gradient-mid: #2193b0;
+      --gradient-end: #007bff;
+      --form-bg-color: rgba(255, 255, 255, 0.1);
+      --text-color-light: #f0f0f0;
+      --text-color-dark: #333;
+      --input-border-color: rgba(255, 255, 255, 0.3);
+      --input-focus-border: #8aff8a;
+      --button-gradient-start: #a7a6cb;
+      --button-gradient-end: #8989ba;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+      background-size: 400% 400%;
+      animation: backgroundGradient 15s ease infinite;
+      color: var(--text-color-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      transition: background 0.5s ease;
+    }
+
+    @keyframes backgroundGradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* State for when video is playing */
+    body.playing #player-ui {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.9) translateY(-20px);
+    }
+
+    body.playing #player-container {
+      opacity: 1;
+      pointer-events: auto;
+      width: 100%;
+      height: 100%;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    #player-ui {
+      background: var(--form-bg-color);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      text-align: center;
+      width: 90%;
+      max-width: 550px;
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    #player-ui h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-color-light);
+      text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+    
+    #player-ui .announcement {
+      margin-bottom: 35px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-color-light);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 18px;
+      box-sizing: border-box;
+      border: 1px solid var(--input-border-color);
+      border-radius: 10px;
+      font-size: 1.05rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-color-light);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--input-focus-border);
+      background-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(138, 255, 138, 0.3);
+    }
+
+    input[type="button"] {
+      background: linear-gradient(45deg, var(--button-gradient-start), var(--button-gradient-end));
+      color: white;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-top: 20px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    input[type="button"]:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    #player-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        pointer-events: none;
+        background-color: #000;
+        transition: opacity 0.7s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #video-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #native-video-player {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+    }
+    
+    #back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        z-index: 10;
+        transition: background 0.3s ease;
+    }
+    
+    #back-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .error-message {
+        color: #ff6b6b;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        max-width: 80%;
+    }
+    
+    .format-info {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div id="player-ui">
+      <h1>StreamFlow Player</h1>
+      <div class="announcement">
+        Immerse yourself in content. Enter your MPD (DASH) stream URL. For DRM-protected streams, provide Key ID and Key if available.
+      </div>
+      <form id="videoForm" onsubmit="event.preventDefault(); playVideo();">
+        <div class="form-group">
+          <label for="manifest">MPD Stream URL</label>
+          <input type="text" id="manifest" name="manifest" placeholder="e.g., https://example.com/stream.mpd" required>
+        </div>
+        <div class="form-group">
+          <label for="keyId">Key ID (Optional)</label>
+          <input type="text" id="keyId" name="keyId" placeholder="For DRM streams (KID)">
+        </div>
+        <div class="form-group">
+          <label for="key">Key (Optional)</label>
+          <input type="text" id="key" name="key" placeholder="For DRM streams (Key)">
+        </div>
+        <input type="button" value="Play Stream" onclick="playVideo()">
+      </form>
+      <div class="format-info">
+        This player supports MPD (DASH) streams using the browser's native video player with DASH.js library.
+      </div>
+    </div>
+
+    <div id="player-container">
+      <button id="back-button" onclick="goBack()">← Back to Input</button>
+      <div id="video-wrapper">
+        <video id="native-video-player" controls data-dashjs-player></video>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    let player; // Store reference to the DASH player
+    
+    /**
+     * Initiates the video playback process.
+     */
+    function playVideo() {
+      const manifestInput = document.getElementById("manifest");
+      if (!manifestInput.value) {
+          alert("Please enter a stream URL.");
+          return;
+      }
+      
+      // Validate URL format
+      if (!manifestInput.value.includes('.mpd')) {
+          alert("Please enter a valid MPD stream URL (should end with .mpd)");
+          return;
+      }
+      
+      document.body.classList.add("playing");
+
+      // Wait for the UI transition before setting up the player
+      setTimeout(() => {
+        setupVideoPlayer();
+      }, 600);
+    }
+
+    /**
+     * Gathers configuration from the form and sets up the DASH player.
+     */
+    function setupVideoPlayer() {
+      const manifestUrl = document.getElementById("manifest").value;
+      const keyId = document.getElementById("keyId").value;
+      const key = document.getElementById("key").value;
+      const videoPlayer = document.getElementById("native-video-player");
+      
+      try {
+        // Initialize DASH player
+        if (player) {
+          player.reset();
+        }
+        
+        player = dashjs.MediaPlayer().create();
+        
+        // Configure player
+        player.updateSettings({
+          streaming: {
+            delay: {
+              liveDelay: 5
+            }
+          }
+        });
+        
+        // Set up DRM if credentials provided
+        if (keyId && key) {
+          player.setProtectionData({
+            'org.w3.clearkey': {
+              'clearkeys': {
+                [keyId]: key
+              }
+            }
+          });
+        }
+        
+        // Initialize player with the MPD stream
+        player.initialize(videoPlayer, manifestUrl, true);
+        
+        // Handle player errors
+        player.on(dashjs.MediaPlayer.events.ERROR, function(event) {
+          console.error("DASH Player Error:", event);
+          showError("Error playing stream. Please check the URL and try again.");
+        });
+        
+        // Handle successful stream load
+        player.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, function() {
+          console.log("Stream initialized successfully");
+        });
+        
+      } catch (error) {
+        console.error("Error setting up DASH player:", error);
+        showError("Error setting up player: " + error.message);
+      }
+    }
+
+    /**
+     * Shows an error message in the player container
+     */
+    function showError(message) {
+      const playerContainer = document.getElementById("player-container");
+      
+      // Remove any existing error message
+      const existingError = document.querySelector('.error-message');
+      if (existingError) {
+        existingError.remove();
+      }
+      
+      // Create and display new error message
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+      playerContainer.appendChild(errorDiv);
+      
+      // Auto-remove error after 5 seconds
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.remove();
+        }
+      }, 5000);
+    }
+
+    /**
+     * Returns to the input form
+     */
+    function goBack() {
+      // Destroy DASH player if it exists
+      if (player) {
+        player.reset();
+        player = null;
+      }
+      
+      // Reset video element
+      const videoPlayer = document.getElementById("native-video-player");
+      videoPlayer.pause();
+      videoPlayer.src = "";
+      
+      // Remove any error messages
+      const errorDiv = document.querySelector('.error-message');
+      if (errorDiv) {
+        errorDiv.remove();
+      }
+      
+      // Return to form view
+      document.body.classList.remove("playing");
+    }
+
+    /**
+     * On page load, check for URL parameters to automatically play a video.
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fileUrl = urlParams.get('emmbed-url');
+      const kid = urlParams.get('kid');
+      const key = urlParams.get('key');
+
+      if (fileUrl) {
+        // Pre-fill the form fields from URL parameters
+        document.getElementById('manifest').value = fileUrl;
+        if (kid) document.getElementById('keyId').value = kid;
+        if (key) document.getElementById('key').value = key;
+        
+        // Automatically start playback
+        playVideo();
+      }
+    });
+  </script>
+</body>
+
+</html>
