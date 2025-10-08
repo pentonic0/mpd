@@ -1,594 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
   <meta charset="UTF-8">
   <title>StreamFlow Player</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --primary-light: #8b5cf6;
-      --secondary: #06d6a0;
-      --dark: #1e293b;
-      --darker: #0f172a;
-      --light: #f8fafc;
-      --gray: #64748b;
-      --gray-light: #cbd5e1;
-      --danger: #ef4444;
-      --success: #10b981;
-      --glass-bg: rgba(255, 255, 255, 0.08);
-      --glass-border: rgba(255, 255, 255, 0.15);
-      --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
-      --radius: 12px;
-      --transition: all 0.3s ease;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html, body {
-      height: 100%;
-      overflow: auto;
-    }
-
+    /* Custom Styles */
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, var(--darker), var(--dark));
-      color: var(--light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: auto;
-      transition: background 0.5s ease;
-      position: relative;
+      margin: 0;
+      padding: 0;
     }
 
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(6, 214, 160, 0.08) 0%, transparent 50%);
-      z-index: -1;
+    /* Custom scrollbar for a modern look */
+    ::-webkit-scrollbar {
+      width: 8px;
     }
 
-    /* State for when video is playing */
-    body.playing #player-ui {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.9) translateY(-20px);
-    }
-
-    body.playing #player-container {
-      opacity: 1;
-      pointer-events: auto;
-      width: 100%;
-      height: 100%;
-    }
-
-    .container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: auto;
-      padding: 20px;
-    }
-    
-    #player-ui {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
-      padding: 2.5rem;
-      text-align: center;
-      width: 90%;
-      max-width: 800px;
-      max-height: 90vh;
-      overflow-y: auto;
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #player-ui::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #player-ui::-webkit-scrollbar-track {
+    ::-webkit-scrollbar-track {
       background: rgba(255, 255, 255, 0.05);
       border-radius: 10px;
     }
 
-    #player-ui::-webkit-scrollbar-thumb {
-      background: var(--primary);
+    ::-webkit-scrollbar-thumb {
+      background-color: #4f46e5;
       border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
     }
 
-    #player-ui::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-light);
-    }
-
-    #player-ui::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-    }
-
-    #player-ui h1 {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #6366f1;
     }
     
-    #player-ui .announcement {
-      margin-bottom: 2rem;
-      color: var(--gray-light);
-      font-size: 1rem;
-      line-height: 1.6;
-      font-weight: 400;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-
-    label {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.6rem;
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: var(--light);
-    }
-
-    label i {
-      margin-right: 8px;
-      color: var(--primary);
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 14px 18px;
-      box-sizing: border-box;
-      border: 1px solid var(--glass-border);
-      border-radius: 8px;
-      font-size: 1rem;
-      background-color: rgba(15, 23, 42, 0.5);
-      color: var(--light);
-      transition: var(--transition);
-      font-family: 'Inter', sans-serif;
-    }
-
-    input[type="text"]::placeholder {
-      color: var(--gray);
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-      border-color: var(--primary);
-      background-color: rgba(15, 23, 42, 0.8);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-    }
-
-    .button-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    button, input[type="button"] {
-      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
-      color: white;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 8px;
-      flex: 1;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-family: 'Inter', sans-serif;
-    }
-    
-    button:hover, input[type="button"]:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    button.secondary {
-      background: transparent;
-      border: 1px solid var(--glass-border);
-      color: var(--gray-light);
-    }
-
-    button.secondary:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--light);
-    }
-
+    /* Styles for the player container to ensure it fills the space */
     #player-container {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      pointer-events: none;
-      background-color: #000;
-      transition: opacity 0.7s ease;
+      width: 100vw;
+      height: 100vh;
       z-index: 10;
+      background: black;
     }
     
-    /* Ensure JWPlayer fills the container */
     #player-container .jwplayer {
-      position: absolute !important;
       width: 100% !important;
       height: 100% !important;
     }
 
-    /* Saved streams section */
-    .saved-streams {
-      margin-top: 2rem;
-      text-align: left;
+    /* Transition effect for player UI */
+    .player-ui-transition {
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
 
-    .saved-streams h3 {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      color: var(--light);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .streams-list {
-      max-height: 300px;
-      overflow-y: auto;
-      border-radius: 8px;
-      background: rgba(15, 23, 42, 0.5);
-      padding: 12px;
-    }
-
-    .streams-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .streams-list::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-    }
-
-    .streams-list::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 10px;
-    }
-
-    .streams-list::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-light);
-    }
-
-    .stream-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 6px;
-      transition: var(--transition);
-    }
-
-    .stream-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .stream-info {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .stream-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--light);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .verified-icon {
-      color: var(--secondary);
-      font-size: 0.8rem;
-    }
-
-    .stream-url {
-      font-size: 0.8rem;
-      color: var(--gray);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .stream-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .stream-action {
-      background: none;
-      border: none;
-      color: var(--gray);
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: var(--transition);
-    }
-
-    .stream-action:hover {
-      color: var(--light);
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .stream-action.play:hover {
-      color: var(--success);
-    }
-
-    .stream-action.delete:hover {
-      color: var(--danger);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 20px;
-      color: var(--gray);
-      font-style: italic;
-    }
-
-    /* Modal styles */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background: var(--dark);
-      border-radius: var(--radius);
-      padding: 2rem;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--glass-border);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .modal-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--light);
-    }
-
-    .close-modal {
-      background: none;
-      border: none;
-      color: var(--gray);
-      font-size: 1.5rem;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .close-modal:hover {
-      color: var(--light);
-    }
-
-    /* Toast notification */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      background: var(--success);
-      color: white;
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transform: translateY(100px);
+    body.playing #player-ui {
       opacity: 0;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      z-index: 1000;
+      pointer-events: none;
+      transform: scale(0.95) translateY(-10px);
     }
-
-    .toast.show {
-      transform: translateY(0);
+    
+    body.playing #player-container {
       opacity: 1;
-    }
-
-    .toast.error {
-      background: var(--danger);
-    }
-
-    /* Back button in player */
-    .back-button {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 100;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: var(--transition);
-    }
-
-    .back-button:hover {
-      background: rgba(0, 0, 0, 0.9);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      #player-ui {
-        padding: 2rem 1.5rem;
-        max-height: 95vh;
-      }
-      
-      #player-ui h1 {
-        font-size: 2rem;
-      }
-      
-      .button-group {
-        flex-direction: column;
-      }
+      pointer-events: auto;
     }
   </style>
+  <script>
+    // Tailwind CSS dark mode configuration
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
 </head>
 
-<body>
+<body class="bg-slate-900 text-slate-200 flex items-center justify-center min-h-screen p-4 transition-all duration-500">
 
-  <div class="container">
-    <div id="player-ui">
-      <h1><i class="fas fa-play-circle"></i> StreamFlow Player</h1>
-      <div class="announcement">
-        Immerse yourself in content. Enter your DASH or HLS stream URL. Save your favorite streams for quick access.
+  <!-- Main UI Container -->
+  <div id="player-ui" class="w-full max-w-4xl player-ui-transition">
+    <div class="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl shadow-black/20 p-6 md:p-8">
+      
+      <!-- Header -->
+      <div class="text-center mb-6">
+        <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">
+          <i class="fas fa-play-circle text-indigo-400"></i> StreamFlow Player
+        </h1>
+        <p class="text-slate-400">
+          Enter a DASH or HLS stream URL below. Save your favorites for quick access.
+        </p>
       </div>
-      <form id="videoForm" onsubmit="event.preventDefault(); playVideo();">
-        <div class="form-group">
-          <label for="streamName"><i class="fas fa-tag"></i> Stream Name (Optional)</label>
-          <input type="text" id="streamName" name="streamName" placeholder="My Favorite Stream">
+
+      <!-- Main Form -->
+      <form id="videoForm" onsubmit="event.preventDefault(); playVideo();" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="streamName" class="font-medium text-slate-300 mb-1 block">Stream Name (Optional)</label>
+            <input type="text" id="streamName" name="streamName" placeholder="My Favorite Stream" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition duration-200">
+          </div>
+          <div>
+            <label for="manifest" class="font-medium text-slate-300 mb-1 block">Stream URL</label>
+            <input type="text" id="manifest" name="manifest" placeholder="https://example.com/stream.mpd" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition duration-200">
+          </div>
+          <div>
+            <label for="keyId" class="font-medium text-slate-300 mb-1 block">Key ID (Optional)</label>
+            <input type="text" id="keyId" name="keyId" placeholder="For DRM streams (KID)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition duration-200">
+          </div>
+          <div>
+            <label for="key" class="font-medium text-slate-300 mb-1 block">Key (Optional)</label>
+            <input type="text" id="key" name="key" placeholder="For DRM streams (Key)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition duration-200">
+          </div>
         </div>
-        <div class="form-group">
-          <label for="manifest"><i class="fas fa-link"></i> Stream URL</label>
-          <input type="text" id="manifest" name="manifest" placeholder="e.g., https://example.com/stream.mpd" required>
-        </div>
-        <div class="form-group">
-          <label for="keyId"><i class="fas fa-key"></i> Key ID (Optional)</label>
-          <input type="text" id="keyId" name="keyId" placeholder="For DRM streams (KID)">
-        </div>
-        <div class="form-group">
-          <label for="key"><i class="fas fa-lock"></i> Key (Optional)</label>
-          <input type="text" id="key" name="key" placeholder="For DRM streams (Key)">
-        </div>
-        <div class="button-group">
-          <input type="button" value="Play Stream" onclick="playVideo()">
-          <button type="button" class="secondary" onclick="saveStream()">
+
+        <div class="flex flex-col md:flex-row gap-3 pt-2">
+          <button type="button" onclick="playVideo()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20">
+            <i class="fas fa-play"></i> Play Stream
+          </button>
+          <button type="button" onclick="saveStream()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
             <i class="fas fa-save"></i> Save
           </button>
         </div>
       </form>
 
-      <div class="saved-streams">
-        <h3><i class="fas fa-bookmark"></i> Saved Streams</h3>
-        <div class="streams-list" id="streamsList">
+      <!-- Saved Streams Section -->
+      <div class="mt-8">
+        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fas fa-bookmark text-indigo-400"></i> Saved Streams</h3>
+        <div class="max-h-64 overflow-y-auto bg-slate-900/50 rounded-lg p-3 space-y-2 border border-slate-700/50" id="streamsList">
           <!-- Saved streams will appear here -->
         </div>
       </div>
-    </div>
 
-    <div id="player-container"></div>
+    </div>
   </div>
 
+  <!-- Player Container -->
+  <div id="player-container" class="opacity-0 pointer-events-none transition-opacity duration-500"></div>
+  
+  <!-- Back to Menu Button (inside player) -->
+  <button id="backButton" class="back-button fixed top-5 left-5 z-20 bg-black/60 hover:bg-black/80 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2 backdrop-blur-sm hidden">
+    <i class="fas fa-arrow-left"></i> Back
+  </button>
+
   <!-- Save Stream Modal -->
-  <div class="modal" id="saveModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Save Stream</h3>
-        <button class="close-modal" onclick="closeSaveModal()">&times;</button>
+  <div class="fixed inset-0 bg-black/70 z-30 flex items-center justify-center p-4 transition-opacity duration-300 hidden" id="saveModal">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-white">Save Stream</h3>
+        <button class="text-slate-400 hover:text-white" onclick="closeSaveModal()">&times;</button>
       </div>
-      <div class="form-group">
-        <label for="saveStreamName"><i class="fas fa-tag"></i> Stream Name</label>
-        <input type="text" id="saveStreamName" placeholder="Enter a name for this stream">
+      <div>
+        <label for="saveStreamName" class="font-medium text-slate-300 mb-1 block">Stream Name</label>
+        <input type="text" id="saveStreamName" placeholder="Enter a name for this stream" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition duration-200">
       </div>
-      <div class="button-group">
-        <button onclick="confirmSaveStream()">
-          <i class="fas fa-save"></i> Save
-        </button>
-        <button class="secondary" onclick="closeSaveModal()">
-          <i class="fas fa-times"></i> Cancel
-        </button>
+      <div class="flex gap-3 mt-5">
+        <button onclick="confirmSaveStream()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-lg transition duration-200">Save</button>
+        <button class="w-full bg-slate-600 hover:bg-slate-500 text-slate-200 font-bold py-2.5 px-4 rounded-lg transition duration-200" onclick="closeSaveModal()">Cancel</button>
       </div>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div class="toast" id="toast">
+  <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-5 rounded-lg shadow-lg flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-40">
     <i class="fas fa-check-circle"></i>
-    <span id="toastMessage">Stream saved successfully!</span>
+    <span id="toastMessage">Stream saved!</span>
   </div>
 
+
   <script type="text/javascript">
-    // Predefined streams
     const predefinedStreams = [
       {
-        name: "Big Buck Bunny (DASH)",
-        url: "https://abm5x5xaaaaaaaamjgudev5k44qb3.otte.live.cf.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1/9f14895badca43e6a716db021dcd0c31/cenc.mpd",
+        name: "Fancode",
+        url: "https://abmvm23aaaaaaaamjmmec4lqatq7x.ottb.live.cf.ww.aiv-cdn.net/sin-nitro/live/clients/dash-sd/enc/v8g0dlo4z8/out/v1/946019f85dc64ae99ff9ce64a9727a62/cenc-sd.mpd",
         keyId: "5689304538fa9f3bb3da99c939a2ad4f",
         key: "6907c88ed8ebdd35a2fa80b9684715e1",
         verified: true
       },
-
       {
         name: "HLS Test Stream",
         url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
@@ -597,8 +196,10 @@
         verified: true
       }
     ];
+    
+    const saveModal = document.getElementById('saveModal');
+    const backButton = document.getElementById('backButton');
 
-    // Wait for the JWPlayer library to be loaded
     function waitForJWPlayer(callback) {
       if (typeof jwplayer === 'function') {
         callback();
@@ -607,113 +208,86 @@
       }
     }
 
-    // Show toast notification
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toastMessage');
       
       toastMessage.textContent = message;
       
-      if (isError) {
-        toast.classList.add('error');
-      } else {
-        toast.classList.remove('error');
-      }
+      toast.classList.toggle('bg-red-500', isError);
+      toast.classList.toggle('bg-green-500', !isError);
+      toast.querySelector('i').className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
       
-      toast.classList.add('show');
+      toast.classList.remove('translate-y-20', 'opacity-0');
       
       setTimeout(() => {
-        toast.classList.remove('show');
+        toast.classList.add('translate-y-20', 'opacity-0');
       }, 3000);
     }
+    
+    function getSavedStreams() {
+        let streams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
+        predefinedStreams.forEach(predefined => {
+            if (!streams.some(s => s.name === predefined.name)) {
+                streams.push(predefined);
+            }
+        });
+        return streams;
+    }
 
-    // Save stream to localStorage
     function saveStream() {
       const manifestUrl = document.getElementById("manifest").value;
-      
       if (!manifestUrl) {
         showToast("Please enter a stream URL first", true);
         return;
       }
-      
-      const streamName = document.getElementById("streamName").value || 
-                         `Stream ${new Date().toLocaleDateString()}`;
-      
+      const streamName = document.getElementById("streamName").value || `Stream ${new Date().toLocaleDateString()}`;
       document.getElementById('saveStreamName').value = streamName;
-      document.getElementById('saveModal').style.display = 'flex';
+      saveModal.classList.remove('hidden');
+      saveModal.classList.add('flex');
     }
 
-    // Confirm and save the stream
     function confirmSaveStream() {
-      const streamName = document.getElementById('saveStreamName').value;
+      const streamName = document.getElementById('saveStreamName').value.trim();
       const manifestUrl = document.getElementById("manifest").value;
       const keyId = document.getElementById("keyId").value;
       const key = document.getElementById("key").value;
       
-      if (!streamName.trim()) {
+      if (!streamName) {
         showToast("Please enter a stream name", true);
         return;
       }
       
-      const streamData = {
-        name: streamName,
-        url: manifestUrl,
-        keyId: keyId,
-        key: key,
-        date: new Date().toISOString(),
-        verified: false
-      };
-      
-      // Get existing streams
-      let savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
-      
-      // Check if stream with same name already exists
+      const streamData = { name: streamName, url: manifestUrl, keyId, key, verified: false };
+      let savedStreams = getSavedStreams();
       const existingIndex = savedStreams.findIndex(stream => stream.name === streamName);
+
       if (existingIndex !== -1) {
-        // Update existing stream
         savedStreams[existingIndex] = streamData;
       } else {
-        // Add new stream
         savedStreams.push(streamData);
       }
       
-      // Save to localStorage
       localStorage.setItem('savedStreams', JSON.stringify(savedStreams));
-      
-      // Update UI
       loadSavedStreams();
-      
-      // Close modal and show success message
       closeSaveModal();
-      showToast(`Stream "${streamName}" saved successfully!`);
+      showToast(`Stream "${streamName}" saved!`);
     }
 
-    // Close the save modal
     function closeSaveModal() {
-      document.getElementById('saveModal').style.display = 'none';
+      saveModal.classList.add('hidden');
+      saveModal.classList.remove('flex');
     }
 
-    // Load saved streams from localStorage
     function loadSavedStreams() {
       const streamsList = document.getElementById('streamsList');
-      
-      // Get saved streams from localStorage
-      let savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
-      
-      // Add predefined streams if they don't exist
-      predefinedStreams.forEach(predefinedStream => {
-        const existingIndex = savedStreams.findIndex(stream => stream.name === predefinedStream.name);
-        if (existingIndex === -1) {
-          savedStreams.push(predefinedStream);
-        }
-      });
+      let savedStreams = getSavedStreams();
       
       if (savedStreams.length === 0) {
-        streamsList.innerHTML = '<div class="empty-state">No saved streams yet</div>';
+        streamsList.innerHTML = '<div class="text-center text-slate-500 py-4">No saved streams yet.</div>';
         return;
       }
       
-      // Sort streams: verified first, then by name
       savedStreams.sort((a, b) => {
         if (a.verified && !b.verified) return -1;
         if (!a.verified && b.verified) return 1;
@@ -721,21 +295,21 @@
       });
       
       streamsList.innerHTML = savedStreams.map(stream => `
-        <div class="stream-item">
-          <div class="stream-info">
-            <div class="stream-name">
+        <div class="flex items-center justify-between p-3 bg-slate-800/60 hover:bg-slate-700/80 rounded-lg transition duration-200 group">
+          <div class="flex-1 overflow-hidden">
+            <div class="font-semibold text-white truncate flex items-center gap-2">
               ${stream.name}
-              ${stream.verified ? '<i class="fas fa-certificate verified-icon" title="Verified Stream"></i>' : ''}
+              ${stream.verified ? '<i class="fas fa-check-circle text-sky-400 text-xs" title="Verified Stream"></i>' : ''}
             </div>
-            <div class="stream-url">${stream.url}</div>
+            <div class="text-sm text-slate-400 truncate">${stream.url}</div>
           </div>
-          <div class="stream-actions">
-            <button class="stream-action play" onclick="loadStream('${stream.name}')" title="Play">
-              <i class="fas fa-play"></i>
+          <div class="flex items-center gap-2 ml-4">
+            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-slate-300 hover:bg-green-500 hover:text-white transition-all duration-200" onclick="playSavedStream('${stream.name}')" title="Play">
+              <i class="fas fa-play text-xs"></i>
             </button>
             ${!stream.verified ? `
-            <button class="stream-action delete" onclick="deleteStream('${stream.name}')" title="Delete">
-              <i class="fas fa-trash"></i>
+            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-slate-300 hover:bg-red-500 hover:text-white transition-all duration-200" onclick="deleteStream('${stream.name}')" title="Delete">
+              <i class="fas fa-trash text-xs"></i>
             </button>
             ` : ''}
           </div>
@@ -743,73 +317,23 @@
       `).join('');
     }
 
-    // Load a saved stream
-    function loadStream(streamName) {
-      // Get saved streams from localStorage
-      let savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
-      
-      // Add predefined streams if they don't exist
-      predefinedStreams.forEach(predefinedStream => {
-        const existingIndex = savedStreams.findIndex(stream => stream.name === predefinedStream.name);
-        if (existingIndex === -1) {
-          savedStreams.push(predefinedStream);
-        }
-      });
-      
+    function playSavedStream(streamName) {
+      const savedStreams = getSavedStreams();
       const stream = savedStreams.find(s => s.name === streamName);
       
       if (stream) {
-        document.getElementById('manifest').value = stream.url;
-        document.getElementById('keyId').value = stream.keyId || '';
-        document.getElementById('key').value = stream.key || '';
-        document.getElementById('streamName').value = stream.name;
-        
-        playVideo();
+        // Play the stream directly without populating the form
+        document.body.classList.add("playing");
+        backButton.classList.remove('hidden');
+        setTimeout(() => waitForJWPlayer(() => setupVideoPlayerWithStream(stream)), 300);
       }
     }
 
-    // Delete a saved stream
-    function deleteStream(streamName) {
-      if (confirm(`Are you sure you want to delete "${streamName}"?`)) {
-        let savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
-        savedStreams = savedStreams.filter(stream => stream.name !== streamName);
-        
-        localStorage.setItem('savedStreams', JSON.stringify(savedStreams));
-        loadSavedStreams();
-        
-        showToast(`Stream "${streamName}" deleted`);
-      }
-    }
-
-    // Play video function
-    function playVideo() {
-      const manifestInput = document.getElementById("manifest");
-      if (!manifestInput.value) {
-        showToast("Please enter a stream URL.", true);
-        return;
-      }
-      
-      document.body.classList.add("playing");
-
-      // Wait for the UI transition to start before setting up the player
-      setTimeout(() => {
-        waitForJWPlayer(setupVideoPlayer);
-      }, 600);
-    }
-
-    // Setup video player
-    function setupVideoPlayer() {
-      const manifestUrl = document.getElementById("manifest").value;
-      const keyId = document.getElementById("keyId").value;
-      const key = document.getElementById("key").value;
-      const streamName = document.getElementById("streamName").value || "Unnamed Stream";
-
-      let streamType = '';
-      if (manifestUrl.includes('.mpd')) {
-        streamType = 'dash';
-      } else if (manifestUrl.includes('.m3u8')) {
-        streamType = 'hls';
-      }
+    function setupVideoPlayerWithStream(stream) {
+      const manifestUrl = stream.url;
+      const keyId = stream.keyId;
+      const key = stream.key;
+      let streamType = manifestUrl.includes('.mpd') ? 'dash' : (manifestUrl.includes('.m3u8') ? 'hls' : '');
 
       const playerConfig = {
         file: manifestUrl,
@@ -819,39 +343,64 @@
         stretching: "uniform",
       };
       
-      if (streamType) {
-        playerConfig.type = streamType;
-      }
-
-      // Add DRM settings only if both keyId and key are provided
+      if (streamType) playerConfig.type = streamType;
       if (keyId && key) {
-        playerConfig.drm = {
-          clearkey: {
-            keyId: keyId,
-            key: key,
-          },
-        };
+        playerConfig.drm = { clearkey: { keyId: keyId, key: key } };
       }
 
       jwplayer("player-container").setup(playerConfig);
-      
-      // Add event listener to exit full player mode
-      jwplayer("player-container").on('ready', function() {
-        // Add a back button when video is ready
-        if (!document.querySelector('.back-button')) {
-          const backButton = document.createElement('button');
-          backButton.className = 'back-button';
-          backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Menu';
-          backButton.onclick = function() {
-            document.body.classList.remove("playing");
-            jwplayer("player-container").remove();
-          };
-          document.getElementById('player-container').appendChild(backButton);
-        }
-      });
     }
 
-    // On page load, check for URL parameters and load saved streams
+    function deleteStream(streamName) {
+        let savedStreams = getSavedStreams().filter(stream => stream.name !== streamName && !stream.verified);
+        localStorage.setItem('savedStreams', JSON.stringify(savedStreams));
+        loadSavedStreams();
+        showToast(`Stream "${streamName}" deleted`);
+    }
+
+    function playVideo() {
+      const manifestInput = document.getElementById("manifest");
+      if (!manifestInput.value) {
+        showToast("Please enter a stream URL.", true);
+        return;
+      }
+      document.body.classList.add("playing");
+      backButton.classList.remove('hidden');
+      setTimeout(() => waitForJWPlayer(setupVideoPlayer), 300);
+    }
+    
+    function closePlayer() {
+        document.body.classList.remove("playing");
+        backButton.classList.add('hidden');
+        if (jwplayer("player-container").getState()) {
+          jwplayer("player-container").remove();
+        }
+    }
+
+    function setupVideoPlayer() {
+      const manifestUrl = document.getElementById("manifest").value;
+      const keyId = document.getElementById("keyId").value;
+      const key = document.getElementById("key").value;
+      let streamType = manifestUrl.includes('.mpd') ? 'dash' : (manifestUrl.includes('.m3u8') ? 'hls' : '');
+
+      const playerConfig = {
+        file: manifestUrl,
+        autostart: true,
+        width: "100%",
+        height: "100%",
+        stretching: "uniform",
+      };
+      
+      if (streamType) playerConfig.type = streamType;
+      if (keyId && key) {
+        playerConfig.drm = { clearkey: { keyId: keyId, key: key } };
+      }
+
+      jwplayer("player-container").setup(playerConfig);
+    }
+
+    backButton.addEventListener('click', closePlayer);
+
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const fileUrl = urlParams.get('emmbed-url');
@@ -859,16 +408,12 @@
       const key = urlParams.get('key');
 
       if (fileUrl) {
-        // Pre-fill the form fields from URL parameters
         document.getElementById('manifest').value = fileUrl;
         if (kid) document.getElementById('keyId').value = kid;
         if (key) document.getElementById('key').value = key;
-        
-        // Automatically start playback
         playVideo();
       }
       
-      // Load saved streams
       loadSavedStreams();
     });
   </script>
