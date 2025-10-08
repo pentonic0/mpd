@@ -1,661 +1,756 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>StreamFlow Player</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://content.jwplatform.com/libraries/SAHhwvZq.js"></script>
-  
-  <!-- Tailwind CSS for modern styling -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts for a clean look -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome for modern icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --player-theme: #6d28d9; /* Deep Violet */
-      --player-theme-hover: #5b21b6;
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #8b5cf6;
+      --secondary: #06d6a0;
+      --dark: #1e293b;
+      --darker: #0f172a;
+      --light: #f8fafc;
+      --gray: #64748b;
+      --gray-light: #cbd5e1;
+      --danger: #ef4444;
+      --success: #10b981;
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
+      --radius: 12px;
+      --transition: all 0.3s ease;
     }
-    
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #0f172a; /* Slate 900 */
-    }
-    
-    /* Custom styles for range inputs (volume/progress) */
-    .slider-track {
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
-      cursor: pointer;
-      width: 100%;
-    }
-    
-    .slider-track:focus {
-      outline: none;
-    }
-
-    /* Track */
-    .slider-track::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 5px;
-      transition: height 0.2s ease;
-    }
-    
-    .slider-track::-moz-range-track {
-      width: 100%;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 5px;
-      transition: height 0.2s ease;
-    }
-    
-    .video-container:hover .slider-track::-webkit-slider-runnable-track,
-    .progress-bar-container:hover .slider-track::-webkit-slider-runnable-track {
-      height: 8px;
-    }
-
-    /* Thumb */
-    .slider-track::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      margin-top: -6px; /* Adjust to center */
-      background-color: var(--player-theme);
-      height: 16px;
-      width: 16px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      transform: scale(0);
-      transition: transform 0.2s ease-in-out;
-    }
-    
-    .slider-track::-moz-range-thumb {
-      background-color: var(--player-theme);
-      height: 16px;
-      width: 16px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      transform: scale(0);
-      transition: transform 0.2s ease-in-out;
-    }
-
-    .video-container:hover .slider-track::-webkit-slider-thumb,
-    .progress-bar-container:hover .slider-track::-webkit-slider-thumb,
-    .slider-track:focus::-webkit-slider-thumb {
-      transform: scale(1);
-    }
-
-    /* Loading Spinner */
-    .loader {
-      border: 4px solid rgba(255, 255, 255, 0.2);
-      border-left-color: var(--player-theme);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .control-btn {
-      color: white;
-      transition: color 0.2s ease, transform 0.2s ease;
-    }
-    
-    .control-btn:hover {
-      color: var(--player-theme);
-      transform: scale(1.1);
-    }
-    
-    /* Server list styles */
-    .server-btn {
-      background-color: #1e293b;
-      border: 1px solid #334155;
-      transition: all 0.2s ease;
-    }
-    
-    .server-btn:hover {
-      background-color: #334155;
-      border-color: var(--player-theme);
-    }
-    
-    .server-btn.active {
-      background-color: var(--player-theme);
-      border-color: var(--player-theme);
-    }
-    
-    /* New server card styles */
-    .server-card {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 1px solid #334155;
-      transition: all 0.3s ease;
-      overflow: hidden;
-    }
-    
-    .server-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(109, 40, 217, 0.2);
-      border-color: var(--player-theme);
-    }
-    
-    .server-card.active {
-      border-color: var(--player-theme);
-      box-shadow: 0 0 0 2px var(--player-theme), 0 10px 25px rgba(109, 40, 217, 0.3);
-    }
-    
-    .server-card-header {
-      background: rgba(109, 40, 217, 0.1);
-      border-bottom: 1px solid #334155;
-    }
-    
-    .quality-badge {
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--player-theme);
-    }
-    
-    .server-status {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-    }
-    
-    .server-status.offline {
-      background: #ef4444;
-    }
-    
-    /* Delete button styles - always visible */
-    .delete-server-btn {
-      opacity: 1;
-      transition: all 0.3s ease;
-    }
-    
-    .delete-server-btn:hover {
-      color: #ef4444 !important;
-      transform: scale(1.1);
-    }
-    
-    /* Play button for predefined servers */
-    .play-indicator {
-      color: #6d28d9;
-    }
-    
-    /* Improved Volume Slider Styles */
-    .volume-container {
-      position: relative;
+      background: linear-gradient(135deg, var(--darker), var(--dark));
+      color: var(--light);
       display: flex;
       align-items: center;
-    }
-    
-    .volume-slider-container {
-      position: relative;
-      width: 0;
+      justify-content: center;
+      min-height: 100vh;
       overflow: hidden;
-      transition: width 0.3s ease;
-      margin-left: 8px;
-    }
-    
-    .volume-container:hover .volume-slider-container {
-      width: 100px;
-    }
-    
-    .volume-slider {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 5px;
-      border-radius: 5px;
-      background: rgba(255, 255, 255, 0.2);
-      outline: none;
-      transition: all 0.2s ease;
-    }
-    
-    .volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--player-theme);
-      cursor: pointer;
-      border: 2px solid white;
-      transition: all 0.2s ease;
-    }
-    
-    .volume-slider::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--player-theme);
-      cursor: pointer;
-      border: 2px solid white;
-      transition: all 0.2s ease;
-    }
-    
-    .volume-slider:hover {
-      height: 8px;
-    }
-    
-    .volume-slider:hover::-webkit-slider-thumb {
-      transform: scale(1.2);
-    }
-    
-    .volume-slider:hover::-moz-range-thumb {
-      transform: scale(1.2);
-    }
-    
-    .volume-level-indicator {
-      position: absolute;
-      height: 5px;
-      background: var(--player-theme);
-      border-radius: 5px;
-      pointer-events: none;
-      transition: height 0.2s ease;
-    }
-    
-    .volume-container:hover .volume-level-indicator {
-      height: 8px;
-    }
-    
-    /* JW Player container styling */
-    #player-container {
-      width: 100%;
-      height: 0;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      transition: background 0.5s ease;
       position: relative;
-      background-color: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(6, 214, 160, 0.08) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    /* State for when video is playing */
+    body.playing #player-ui {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.9) translateY(-20px);
+    }
+
+    body.playing #player-container {
+      opacity: 1;
+      pointer-events: auto;
+      width: 100%;
+      height: 100%;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    #player-ui {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 2.5rem;
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #player-ui::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    #player-ui h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    #player-ui .announcement {
+      margin-bottom: 2rem;
+      color: var(--gray-light);
+      font-size: 1rem;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--light);
+    }
+
+    label i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 18px;
+      box-sizing: border-box;
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: rgba(15, 23, 42, 0.5);
+      color: var(--light);
+      transition: var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--gray);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: rgba(15, 23, 42, 0.8);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    button, input[type="button"] {
+      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      flex: 1;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    button:hover, input[type="button"]:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: var(--gray-light);
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--light);
+    }
+
+    #player-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+      background-color: #000;
+      transition: opacity 0.7s ease;
+      z-index: 10;
+    }
+    
+    /* Ensure JWPlayer fills the container */
     #player-container .jwplayer {
       position: absolute !important;
       width: 100% !important;
       height: 100% !important;
+    }
+
+    /* Saved streams section */
+    .saved-streams {
+      margin-top: 2rem;
+      text-align: left;
+    }
+
+    .saved-streams h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .streams-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 12px;
+    }
+
+    .stream-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .stream-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .stream-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .stream-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--light);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stream-url {
+      font-size: 0.8rem;
+      color: var(--gray);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stream-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stream-action {
+      background: none;
+      border: none;
+      color: var(--gray);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .stream-action:hover {
+      color: var(--light);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .stream-action.play:hover {
+      color: var(--success);
+    }
+
+    .stream-action.delete:hover {
+      color: var(--danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: var(--gray);
+      font-style: italic;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--dark);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--glass-border);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--light);
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      color: var(--gray);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .close-modal:hover {
+      color: var(--light);
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: var(--success);
+      color: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      #player-ui {
+        padding: 2rem 1.5rem;
+      }
+      
+      #player-ui h1 {
+        font-size: 2rem;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 
-<body class="bg-slate-900 text-white flex flex-col items-center justify-center min-h-screen p-4 md:p-6">
-  <div class="w-full max-w-6xl mx-auto">
-    <div class="text-center mb-6">
-      <h1 class="text-3xl md:text-5xl font-bold tracking-tight">StreamFlow Player</h1>
-      <p class="text-slate-400 mt-2 text-sm md:text-base">Select a server to begin streaming.</p>
-    </div>
-    
-    <!-- Video Player Container -->
-    <div id="video-container" class="video-container w-full bg-black rounded-xl shadow-2xl shadow-slate-900/50 overflow-hidden relative group aspect-video">
-      <div id="player-container"></div>
+<body>
 
-      <!-- Loading Indicator -->
-      <div id="loading-spinner" class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-30">
-        <div class="loader"></div>
+  <div class="container">
+    <div id="player-ui">
+      <h1><i class="fas fa-play-circle"></i> StreamFlow Player</h1>
+      <div class="announcement">
+        Immerse yourself in content. Enter your DASH or HLS stream URL. Save your favorite streams for quick access.
       </div>
-    </div>
-    
-    <!-- Server Selection Section -->
-    <div class="mt-8">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div>
-          <h2 class="text-2xl font-bold">Available Servers</h2>
-          <p class="text-slate-400 mt-1 text-sm">Select a server to start streaming instantly</p>
+      <form id="videoForm" onsubmit="event.preventDefault(); playVideo();">
+        <div class="form-group">
+          <label for="streamName"><i class="fas fa-tag"></i> Stream Name (Optional)</label>
+          <input type="text" id="streamName" name="streamName" placeholder="My Favorite Stream">
         </div>
-        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-          <div class="relative flex-grow">
-            <input id="new-server-input" type="text" placeholder="Enter M3U8/MPD URL to add server" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-violet-500 transition shadow-sm placeholder-slate-500">
-            <i class="fa-solid fa-link absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
-          </div>
-          <button id="add-server-btn" class="bg-violet-700 hover:bg-violet-600 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-violet-500/30">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add Server</span>
+        <div class="form-group">
+          <label for="manifest"><i class="fas fa-link"></i> Stream URL</label>
+          <input type="text" id="manifest" name="manifest" placeholder="e.g., https://example.com/stream.mpd" required>
+        </div>
+        <div class="form-group">
+          <label for="keyId"><i class="fas fa-key"></i> Key ID (Optional)</label>
+          <input type="text" id="keyId" name="keyId" placeholder="For DRM streams (KID)">
+        </div>
+        <div class="form-group">
+          <label for="key"><i class="fas fa-lock"></i> Key (Optional)</label>
+          <input type="text" id="key" name="key" placeholder="For DRM streams (Key)">
+        </div>
+        <div class="button-group">
+          <input type="button" value="Play Stream" onclick="playVideo()">
+          <button type="button" class="secondary" onclick="saveStream()">
+            <i class="fas fa-save"></i> Save
           </button>
         </div>
-      </div>
-      
-      <div id="server-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Server cards will be dynamically added here -->
-      </div>
-      
-      <!-- Empty state when no servers available -->
-      <div id="empty-state" class="text-center py-12 hidden">
-        <div class="bg-slate-800/50 rounded-2xl p-8 max-w-md mx-auto">
-          <i class="fa-solid fa-satellite-dish text-5xl text-slate-600 mb-4"></i>
-          <h3 class="text-xl font-semibold mb-2">No servers available</h3>
-          <p class="text-slate-400 mb-6">Add a server using the form above to get started.</p>
+      </form>
+
+      <div class="saved-streams">
+        <h3><i class="fas fa-bookmark"></i> Saved Streams</h3>
+        <div class="streams-list" id="streamsList">
+          <!-- Saved streams will appear here -->
         </div>
+      </div>
+    </div>
+
+    <div id="player-container"></div>
+  </div>
+
+  <!-- Save Stream Modal -->
+  <div class="modal" id="saveModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Save Stream</h3>
+        <button class="close-modal" onclick="closeSaveModal()">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="saveStreamName"><i class="fas fa-tag"></i> Stream Name</label>
+        <input type="text" id="saveStreamName" placeholder="Enter a name for this stream">
+      </div>
+      <div class="button-group">
+        <button onclick="confirmSaveStream()">
+          <i class="fas fa-save"></i> Save
+        </button>
+        <button class="secondary" onclick="closeSaveModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
       </div>
     </div>
   </div>
 
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Stream saved successfully!</span>
+  </div>
+
   <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', () => {
-      // Predefined servers with URLs and optional DRM keys
-      const predefinedServers = [
-        {
-          name: "Main Server",
-          url: "https://cdn.jwplayer.com/manifests/pZxWPRg4.m3u8",
-          keyId: "",
-          key: "",
-          quality: "HD",
-          status: "online",
-          icon: "📺"
-        },
-        {
-          name: "Backup Server",
-          url: "http://stvlive.net:8080/tsports1/tracks-v1a1/mono.m3u8",
-          keyId: "",
-          key: "",
-          quality: "HD",
-          status: "online",
-          icon: "🔄"
-        },
-        {
-          name: "Sports Stream",
-          url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-          keyId: "",
-          key: "",
-          quality: "SD",
-          status: "online",
-          icon: "⚽"
-        },
-        {
-          name: "Movie Server",
-          url: "https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8",
-          keyId: "",
-          key: "",
-          quality: "HD",
-          status: "online",
-          icon: "🎬"
-        },
-        {
-          name: "Documentary Server",
-          url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
-          keyId: "",
-          key: "",
-          quality: "SD",
-          status: "online",
-          icon: "🌍"
-        },
-        {
-          name: "Music Stream",
-          url: "https://content.jwplayer.com/manifests/vM7nH0Kl.m3u8",
-          keyId: "",
-          key: "",
-          quality: "HD",
-          status: "online",
-          icon: "🎵"
-        },
-        {
-          name: "Sports",
-          url: "https://live.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd",
-          keyId: "a6dfc4f17d70d8d07639659193f03b25",
-          key: "893eacfabe386144b81733d622a7ad17",
-          quality: "HD",
-          status: "online",
-          icon: "⚽"
-        }
-      ];
-
-      let currentPlayer = null;
-      let currentServerIndex = -1;
-      let customServers = [];
-
-      // DOM Elements
-      const loadingSpinner = document.getElementById('loading-spinner');
-      const serverList = document.getElementById('server-list');
-      const newServerInput = document.getElementById('new-server-input');
-      const addServerBtn = document.getElementById('add-server-btn');
-      const emptyState = document.getElementById('empty-state');
-
-      /**
-       * Waits for the JWPlayer library to be loaded before executing a callback.
-       */
-      function waitForJWPlayer(callback) {
-        if (typeof jwplayer === 'function') {
-          callback();
-        } else {
-          setTimeout(() => waitForJWPlayer(callback), 100);
-        }
+    // Wait for the JWPlayer library to be loaded
+    function waitForJWPlayer(callback) {
+      if (typeof jwplayer === 'function') {
+        callback();
+      } else {
+        setTimeout(() => waitForJWPlayer(callback), 100);
       }
+    }
 
-      /**
-       * Initialize the server list
-       */
-      function initializeServerList() {
-        serverList.innerHTML = '';
-        
-        const allServers = [...predefinedServers, ...customServers];
-        
-        if (allServers.length === 0) {
-          emptyState.classList.remove('hidden');
-          serverList.classList.add('hidden');
-        } else {
-          emptyState.classList.add('hidden');
-          serverList.classList.remove('hidden');
-          
-          // Add predefined servers
-          predefinedServers.forEach((server, index) => {
-            addServerCard(server.name, server.url, server.quality, server.status, server.icon, index);
-          });
-          
-          // Add custom servers
-          customServers.forEach((server, index) => {
-            addServerCard(server.name, server.url, server.quality || "Custom", server.status || "online", "🔗", predefinedServers.length + index, true);
-          });
-        }
+    // Show toast notification
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toastMessage.textContent = message;
+      
+      if (isError) {
+        toast.classList.add('error');
+      } else {
+        toast.classList.remove('error');
       }
       
-      /**
-       * Add a server card to the list
-       */
-      function addServerCard(name, url, quality, status, icon, index, isCustom = false) {
-        const card = document.createElement('div');
-        card.className = 'server-card rounded-xl p-4 cursor-pointer';
-        card.innerHTML = `
-          <div class="server-card-header p-3 -mx-4 -mt-4 mb-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <div class="server-status ${status === 'online' ? '' : 'offline'}"></div>
-              <span class="text-sm font-medium text-slate-300">${status === 'online' ? 'Online' : 'Offline'}</span>
-            </div>
-            <span class="quality-badge text-white text-xs font-semibold">${quality}</span>
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Save stream to localStorage
+    function saveStream() {
+      const manifestUrl = document.getElementById("manifest").value;
+      
+      if (!manifestUrl) {
+        showToast("Please enter a stream URL first", true);
+        return;
+      }
+      
+      const streamName = document.getElementById("streamName").value || 
+                         `Stream ${new Date().toLocaleDateString()}`;
+      
+      document.getElementById('saveStreamName').value = streamName;
+      document.getElementById('saveModal').style.display = 'flex';
+    }
+
+    // Confirm and save the stream
+    function confirmSaveStream() {
+      const streamName = document.getElementById('saveStreamName').value;
+      const manifestUrl = document.getElementById("manifest").value;
+      const keyId = document.getElementById("keyId").value;
+      const key = document.getElementById("key").value;
+      
+      if (!streamName.trim()) {
+        showToast("Please enter a stream name", true);
+        return;
+      }
+      
+      const streamData = {
+        name: streamName,
+        url: manifestUrl,
+        keyId: keyId,
+        key: key,
+        date: new Date().toISOString()
+      };
+      
+      // Get existing streams
+      let savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
+      
+      // Check if stream with same name already exists
+      const existingIndex = savedStreams.findIndex(stream => stream.name === streamName);
+      if (existingIndex !== -1) {
+        // Update existing stream
+        savedStreams[existingIndex] = streamData;
+      } else {
+        // Add new stream
+        savedStreams.push(streamData);
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('savedStreams', JSON.stringify(savedStreams));
+      
+      // Update UI
+      loadSavedStreams();
+      
+      // Close modal and show success message
+      closeSaveModal();
+      showToast(`Stream "${streamName}" saved successfully!`);
+    }
+
+    // Close the save modal
+    function closeSaveModal() {
+      document.getElementById('saveModal').style.display = 'none';
+    }
+
+    // Load saved streams from localStorage
+    function loadSavedStreams() {
+      const streamsList = document.getElementById('streamsList');
+      const savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
+      
+      if (savedStreams.length === 0) {
+        streamsList.innerHTML = '<div class="empty-state">No saved streams yet</div>';
+        return;
+      }
+      
+      streamsList.innerHTML = savedStreams.map(stream => `
+        <div class="stream-item">
+          <div class="stream-info">
+            <div class="stream-name">${stream.name}</div>
+            <div class="stream-url">${stream.url}</div>
           </div>
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-              <div class="text-xl">${icon}</div>
-              <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-white truncate">${name}</h3>
-              </div>
-            </div>
-            <div class="flex items-center ml-2">
-              ${isCustom ? 
-                '<button class="delete-server-btn text-slate-400 hover:text-red-500 p-2 rounded-full transition-colors" title="Delete server">' +
-                  '<i class="fa-solid fa-trash"></i>' +
-                '</button>' : 
-                '<i class="fa-solid fa-play play-indicator ml-2"></i>'
-              }
-            </div>
+          <div class="stream-actions">
+            <button class="stream-action play" onclick="loadStream('${stream.name}')" title="Play">
+              <i class="fas fa-play"></i>
+            </button>
+            <button class="stream-action delete" onclick="deleteStream('${stream.name}')" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
-        `;
+        </div>
+      `).join('');
+    }
+
+    // Load a saved stream
+    function loadStream(streamName) {
+      const savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
+      const stream = savedStreams.find(s => s.name === streamName);
+      
+      if (stream) {
+        document.getElementById('manifest').value = stream.url;
+        document.getElementById('keyId').value = stream.keyId || '';
+        document.getElementById('key').value = stream.key || '';
+        document.getElementById('streamName').value = stream.name;
         
-        card.addEventListener('click', (e) => {
-          if (!e.target.closest('.delete-server-btn')) {
-            // Play this server
-            switchToServer(index);
-            
-            // Update active state
-            document.querySelectorAll('.server-card').forEach(card => {
-              card.classList.remove('active');
-            });
-            card.classList.add('active');
-          }
-        });
+        playVideo();
+      }
+    }
+
+    // Delete a saved stream
+    function deleteStream(streamName) {
+      if (confirm(`Are you sure you want to delete "${streamName}"?`)) {
+        let savedStreams = JSON.parse(localStorage.getItem('savedStreams') || '[]');
+        savedStreams = savedStreams.filter(stream => stream.name !== streamName);
         
-        // Add delete functionality for custom servers
-        if (isCustom) {
-          const deleteBtn = card.querySelector('.delete-server-btn');
-          deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Remove custom server
-            customServers = customServers.filter(s => s.url !== url);
-            saveCustomServers();
-            initializeServerList();
-          });
-        }
+        localStorage.setItem('savedStreams', JSON.stringify(savedStreams));
+        loadSavedStreams();
         
-        serverList.appendChild(card);
+        showToast(`Stream "${streamName}" deleted`);
+      }
+    }
+
+    // Play video function
+    function playVideo() {
+      const manifestInput = document.getElementById("manifest");
+      if (!manifestInput.value) {
+        showToast("Please enter a stream URL.", true);
+        return;
       }
       
-      /**
-       * Save custom servers to localStorage
-       */
-      function saveCustomServers() {
-        localStorage.setItem('customServers', JSON.stringify(customServers));
-      }
-      
-      /**
-       * Load custom servers from localStorage
-       */
-      function loadCustomServers() {
-        const saved = localStorage.getItem('customServers');
-        if (saved) {
-          customServers = JSON.parse(saved);
-        }
-      }
-      
-      /**
-       * Add a new custom server
-       */
-      function addCustomServer() {
-        const url = newServerInput.value.trim();
-        if (url && (url.includes('.m3u8') || url.includes('.mpd'))) {
-          const name = `Custom Server ${customServers.length + 1}`;
-          customServers.push({ 
-            name, 
-            url, 
-            quality: "Custom",
-            status: "online"
-          });
-          saveCustomServers();
-          initializeServerList();
-          newServerInput.value = '';
-          
-          // Auto-play the newly added server
-          const newIndex = predefinedServers.length + customServers.length - 1;
-          switchToServer(newIndex);
-          
-          // Update active state
-          setTimeout(() => {
-            const cards = document.querySelectorAll('.server-card');
-            if (cards.length > 0) {
-              cards.forEach(card => card.classList.remove('active'));
-              cards[cards.length - 1].classList.add('active');
-            }
-          }, 100);
-        } else {
-          alert('Please enter a valid M3U8 or MPD URL');
-        }
+      document.body.classList.add("playing");
+
+      // Wait for the UI transition to start before setting up the player
+      setTimeout(() => {
+        waitForJWPlayer(setupVideoPlayer);
+      }, 600);
+    }
+
+    // Setup video player
+    function setupVideoPlayer() {
+      const manifestUrl = document.getElementById("manifest").value;
+      const keyId = document.getElementById("keyId").value;
+      const key = document.getElementById("key").value;
+
+      let streamType = '';
+      if (manifestUrl.includes('.mpd')) {
+        streamType = 'dash';
+      } else if (manifestUrl.includes('.m3u8')) {
+        streamType = 'hls';
       }
 
-      /**
-       * Switches to a predefined server
-       * @param {number} index - Index of the server in predefinedServers array
-       */
-      function switchToServer(index) {
-        const allServers = [...predefinedServers, ...customServers];
-        const server = allServers[index];
-        
-        if (!server) return;
-        
-        loadingSpinner.classList.remove('hidden');
-        
-        // Setup player with new server
-        waitForJWPlayer(() => {
-          let streamType = '';
-          if (server.url.includes('.mpd')) {
-            streamType = 'dash';
-          } else if (server.url.includes('.m3u8')) {
-            streamType = 'hls';
-          }
+      const playerConfig = {
+        file: manifestUrl,
+        autostart: true,
+        width: "100%",
+        height: "100%",
+        stretching: "uniform",
+      };
+      
+      if (streamType) {
+        playerConfig.type = streamType;
+      }
 
-          const playerConfig = {
-            file: server.url,
-            autostart: true,
-            width: "100%",
-            height: "100%",
-            stretching: "uniform",
+      // Add DRM settings only if both keyId and key are provided
+      if (keyId && key) {
+        playerConfig.drm = {
+          clearkey: {
+            keyId: keyId,
+            key: key,
+          },
+        };
+      }
+
+      jwplayer("player-container").setup(playerConfig);
+      
+      // Add event listener to exit full player mode
+      jwplayer("player-container").on('pause', function() {
+        // Add a back button when video is paused
+        if (!document.querySelector('.back-button')) {
+          const backButton = document.createElement('button');
+          backButton.className = 'back-button';
+          backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Menu';
+          backButton.style.position = 'absolute';
+          backButton.style.top = '20px';
+          backButton.style.left = '20px';
+          backButton.style.zIndex = '100';
+          backButton.style.background = 'rgba(0,0,0,0.7)';
+          backButton.style.color = 'white';
+          backButton.style.border = 'none';
+          backButton.style.padding = '10px 15px';
+          backButton.style.borderRadius = '5px';
+          backButton.style.cursor = 'pointer';
+          backButton.style.fontFamily = 'Inter, sans-serif';
+          backButton.style.fontWeight = '500';
+          backButton.onclick = function() {
+            document.body.classList.remove("playing");
+            jwplayer("player-container").remove();
           };
-          
-          if (streamType) {
-              playerConfig.type = streamType;
-          }
-
-          // Add DRM settings only if both keyId and key are provided
-          if (server.keyId && server.key) {
-            playerConfig.drm = {
-              clearkey: {
-                keyId: server.keyId,
-                key: server.key,
-              },
-            };
-          }
-
-          // Remove existing player if it exists
-          if (currentPlayer) {
-            currentPlayer.remove();
-          }
-          
-          currentPlayer = jwplayer("player-container").setup(playerConfig);
-          currentServerIndex = index;
-          
-          // Hide loading spinner when player is ready
-          currentPlayer.on('ready', () => {
-            loadingSpinner.classList.add('hidden');
-          });
-          
-          currentPlayer.on('error', () => {
-            loadingSpinner.classList.add('hidden');
-          });
-        });
-      }
-
-      /**
-       * Initialize the page - set up the server panel and auto-play the first server
-       */
-      function initializePage() {
-        loadCustomServers();
-        initializeServerList();
-        
-        // Auto-play the first server
-        if (predefinedServers.length > 0) {
-          setTimeout(() => {
-            switchToServer(0);
-            const firstCard = document.querySelector('.server-card');
-            if (firstCard) firstCard.classList.add('active');
-          }, 500);
+          document.getElementById('player-container').appendChild(backButton);
         }
+      });
+    }
+
+    // On page load, check for URL parameters and load saved streams
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fileUrl = urlParams.get('emmbed-url');
+      const kid = urlParams.get('kid');
+      const key = urlParams.get('key');
+
+      if (fileUrl) {
+        // Pre-fill the form fields from URL parameters
+        document.getElementById('manifest').value = fileUrl;
+        if (kid) document.getElementById('keyId').value = kid;
+        if (key) document.getElementById('key').value = key;
+        
+        // Automatically start playback
+        playVideo();
       }
-
-      // Event listeners
-      addServerBtn.addEventListener('click', addCustomServer);
-      newServerInput.addEventListener('keypress', (e) => e.key === 'Enter' && addCustomServer());
-
-      // Initialize the page when DOM is loaded
-      initializePage();
+      
+      // Load saved streams
+      loadSavedStreams();
     });
   </script>
 </body>
+
 </html>
