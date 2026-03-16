@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethereal Gallery - 3D Experience</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #0a0a0f;
+  font-family: 'Cormorant Garamond', serif;
+  cursor: grab;
+  user-select: none;
+}
+
+body.dragging {
+  cursor: grabbing;
+}
+
+canvas {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* UI Overlay */
+.ui-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Header */
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: all;
+  background: linear-gradient(180deg, rgba(10,10,15,0.9) 0%, transparent 100%);
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: #ffffff;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeInDown 1s ease forwards 0.5s;
+  font-family: 'Space Mono', monospace;
+}
+
+.controls {
+  display: flex;
+  gap: 1.5rem;
+  opacity: 0;
+  animation: fadeInDown 1s ease forwards 0.7s;
+}
+
+.control-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #ffffff;
+  padding: 0.7rem 1.5rem;
+  border-radius: 50px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  backdrop-filter: blur(10px);
+  pointer-events: all;
+}
+
+.control-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+}
+
+.control-btn.active {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* Info Panel */
+.info-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 3rem;
+  pointer-events: all;
+  background: linear-gradient(0deg, rgba(10,10,15,0.95) 0%, transparent 100%);
+  transform: translateY(100%);
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.info-panel.show {
+  transform: translateY(0);
+}
+
+.info-content {
+  max-width: 800px;
+  color: #ffffff;
+}
+
+.info-title {
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.info-description {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  opacity: 0.8;
+  font-weight: 300;
+}
+
+/* Gallery Counter */
+.gallery-counter {
+  position: absolute;
+  bottom: 3rem;
+  right: 3rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.2em;
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 1s;
+}
+
+.current-slide {
+  font-size: 3rem;
+  display: block;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: all;
+  transition: opacity 1s ease, visibility 1s ease;
+}
+
+.loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.loading-bar {
+  width: 200px;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  width: 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+/* Instructions */
+.instructions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeInOut 3s ease forwards 2s;
+  pointer-events: none;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Particle effect overlay */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .logo {
+    font-size: 1.2rem;
+  }
+  
+  .controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .info-title {
+    font-size: 2rem;
+  }
+  
+  .gallery-counter {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+  
+  .current-slide {
+    font-size: 2rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div class="loading-screen">
+  <div class="loading-text">Loading Experience</div>
+  <div class="loading-bar">
+    <div class="loading-progress"></div>
+  </div>
+</div>
+
+<!-- UI Overlay -->
+<div class="ui-container">
+  <div class="header">
+    <div class="logo">Ethereal</div>
+    <div class="controls">
+      <button class="control-btn" id="autoRotateBtn">Auto Rotate</button>
+      <button class="control-btn" id="particlesBtn">Particles</button>
+      <button class="control-btn" id="infoBtn">Info</button>
+    </div>
+  </div>
+  
+  <div class="instructions">
+    Drag to rotate • Scroll to zoom
+  </div>
+  
+  <div class="gallery-counter">
+    <span class="current-slide">01</span>
+    <span>/ 06</span>
+  </div>
+  
+  <div class="info-panel">
+    <div class="info-content">
+      <h2 class="info-title">Attack on Titan Gallery</h2>
+      <p class="info-description">
+        Experience an immersive 3D gallery showcasing iconic moments and characters from Attack on Titan. 
+        Navigate through the collection in a dynamic circular arrangement, with smooth interactions and 
+        atmospheric effects that bring the world to life.
+      </p>
+    </div>
+  </div>
+</div>
+
+<canvas class="particles"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+// ==================== SCENE SETUP ====================
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a0a0f, 0.02);
+
+const camera = new THREE.PerspectiveCamera(
+  50,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 2, 14);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+// ==================== LIGHTING ====================
+// Main directional light
+const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+mainLight.position.set(10, 15, 10);
+mainLight.castShadow = true;
+mainLight.shadow.mapSize.width = 2048;
+mainLight.shadow.mapSize.height = 2048;
+scene.add(mainLight);
+
+// Rim light
+const rimLight = new THREE.DirectionalLight(0x4a90e2, 0.8);
+rimLight.position.set(-10, 5, -10);
+scene.add(rimLight);
+
+// Ambient light
+const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+scene.add(ambientLight);
+
+// Accent point lights
+const accentLight1 = new THREE.PointLight(0xff6b9d, 2, 20);
+accentLight1.position.set(5, 3, 5);
+scene.add(accentLight1);
+
+const accentLight2 = new THREE.PointLight(0x4a90e2, 2, 20);
+accentLight2.position.set(-5, 3, -5);
+scene.add(accentLight2);
+
+// ==================== ENVIRONMENT ====================
+// Floor with gradient
+const floorGeometry = new THREE.CircleGeometry(20, 64);
+const floorMaterial = new THREE.MeshStandardMaterial({
+  color: 0x0a0a0f,
+  roughness: 0.8,
+  metalness: 0.2
+});
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// ==================== TEXTURE LOADER ====================
+const loader = new THREE.TextureLoader();
+const loadingManager = new THREE.LoadingManager();
+
+let loadedCount = 0;
+const totalImages = 7;
+
+loadingManager.onLoad = () => {
+  setTimeout(() => {
+    document.querySelector('.loading-screen').classList.add('hidden');
+  }, 500);
+};
+
+// ==================== CENTER PIECE ====================
+const centerTexture = loader.load(
+  "https://i.postimg.cc/cLkNc5sd/toppng-com-levi-ackerman-attack-on-titan-levi-409x497.png",
+  () => { loadedCount++; }
+);
+
+const centerGeo = new THREE.PlaneGeometry(4, 5.5);
+const centerMat = new THREE.MeshStandardMaterial({
+  map: centerTexture,
+  transparent: true,
+  side: THREE.DoubleSide,
+  roughness: 0.5,
+  metalness: 0.3
+});
+
+const centerMesh = new THREE.Mesh(centerGeo, centerMat);
+centerMesh.position.y = 0.5;
+centerMesh.castShadow = true;
+scene.add(centerMesh);
+
+// Glowing frame for center piece
+const frameGeo = new THREE.RingGeometry(2.3, 2.5, 64);
+const frameMat = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: 0.3,
+  side: THREE.DoubleSide
+});
+const frame = new THREE.Mesh(frameGeo, frameMat);
+frame.position.z = -0.1;
+centerMesh.add(frame);
+
+// ==================== GALLERY IMAGES ====================
+const images = [
+  "https://i.postimg.cc/bYkFvVWL/c05fd5e04af959af9ebf143d34ecab1c.jpg",
+  "https://i.postimg.cc/ZqXVb6ck/cf373d0d00a1c82c4e4ea6d2aa1e303a.jpg",
+  "https://i.postimg.cc/pLTZKsGJ/9f667521806c0336928ef5037c04e15b.jpg",
+  "https://i.postimg.cc/pXVYt0H2/92b832be1baa248ff4ae930ccc2cce53.jpg",
+  "https://i.postimg.cc/wT3yVnzh/a81c013e94815fcf1a79ed52b1aaae5e.jpg",
+  "https://i.postimg.cc/BZ7tXNFx/e3d917b512d173670cfdfbbbbe271f2b.jpg"
+];
+
+const gallery = [];
+const radius = 8;
+
+images.forEach((img, i) => {
+  const tex = loader.load(img, () => { loadedCount++; });
+  
+  // Image plane
+  const geo = new THREE.PlaneGeometry(2.5, 3.5);
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex,
+    roughness: 0.6,
+    metalness: 0.2
+  });
+  
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  
+  const angle = (i / images.length) * Math.PI * 2;
+  mesh.position.x = Math.cos(angle) * radius;
+  mesh.position.z = Math.sin(angle) * radius;
+  mesh.position.y = 0.5;
+  
+  // Add subtle glow effect
+  const glowGeo = new THREE.PlaneGeometry(2.7, 3.7);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.1,
+    side: THREE.DoubleSide
+  });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  glow.position.z = -0.05;
+  mesh.add(glow);
+  
+  scene.add(mesh);
+  gallery.push(mesh);
+});
+
+// ==================== PARTICLES SYSTEM ====================
+let particlesEnabled = false;
+let particleSystem;
+
+function createParticles() {
+  const particlesGeometry = new THREE.BufferGeometry();
+  const particlesCount = 1000;
+  const posArray = new Float32Array(particlesCount * 3);
+  
+  for (let i = 0; i < particlesCount * 3; i++) {
+    posArray[i] = (Math.random() - 0.5) * 40;
+  }
+  
+  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+  
+  const particlesMaterial = new THREE.PointsMaterial({
+    size: 0.03,
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.6,
+    blending: THREE.AdditiveBlending
+  });
+  
+  particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+  scene.add(particleSystem);
+}
+
+// ==================== INTERACTION CONTROLS ====================
+let rotation = 0;
+let targetRotation = 0;
+let autoRotate = false;
+let isDragging = false;
+let prevX = 0;
+let velocity = 0;
+
+// Mouse/Touch controls
+document.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  prevX = e.clientX;
+  velocity = 0;
+  document.body.classList.add('dragging');
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+  document.body.classList.remove('dragging');
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    const delta = e.clientX - prevX;
+    targetRotation += delta * 0.005;
+    velocity = delta * 0.005;
+    prevX = e.clientX;
+  }
+});
+
+// Touch support
+document.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  prevX = e.touches[0].clientX;
+  velocity = 0;
+});
+
+document.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (isDragging) {
+    const delta = e.touches[0].clientX - prevX;
+    targetRotation += delta * 0.005;
+    velocity = delta * 0.005;
+    prevX = e.touches[0].clientX;
+  }
+});
+
+// Scroll zoom
+document.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const zoomSpeed = 0.001;
+  camera.position.z = Math.max(8, Math.min(20, camera.position.z + e.deltaY * zoomSpeed));
+}, { passive: false });
+
+// ==================== UI CONTROLS ====================
+const autoRotateBtn = document.getElementById('autoRotateBtn');
+const particlesBtn = document.getElementById('particlesBtn');
+const infoBtn = document.getElementById('infoBtn');
+const infoPanel = document.querySelector('.info-panel');
+
+autoRotateBtn.addEventListener('click', () => {
+  autoRotate = !autoRotate;
+  autoRotateBtn.classList.toggle('active');
+});
+
+particlesBtn.addEventListener('click', () => {
+  particlesEnabled = !particlesEnabled;
+  particlesBtn.classList.toggle('active');
+  
+  if (particlesEnabled && !particleSystem) {
+    createParticles();
+  } else if (particleSystem) {
+    particleSystem.visible = particlesEnabled;
+  }
+});
+
+infoBtn.addEventListener('click', () => {
+  infoPanel.classList.toggle('show');
+  infoBtn.classList.toggle('active');
+});
+
+// ==================== GALLERY COUNTER ====================
+function updateCounter() {
+  const normalizedRotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  const currentIndex = Math.round((normalizedRotation / (Math.PI * 2)) * images.length) % images.length;
+  const displayIndex = ((images.length - currentIndex) % images.length) + 1;
+  document.querySelector('.current-slide').textContent = displayIndex.toString().padStart(2, '0');
+}
+
+// ==================== ANIMATION LOOP ====================
+let time = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.01;
+  
+  // Smooth rotation interpolation
+  rotation += (targetRotation - rotation) * 0.1;
+  
+  // Auto rotate
+  if (autoRotate && !isDragging) {
+    targetRotation += 0.003;
+  } else if (!isDragging) {
+    // Add inertia
+    velocity *= 0.95;
+    targetRotation += velocity;
+  }
+  
+  // Animate gallery images
+  gallery.forEach((img, i) => {
+    const angle = (i / gallery.length) * Math.PI * 2 + rotation;
+    
+    img.position.x = Math.cos(angle) * radius;
+    img.position.z = Math.sin(angle) * radius;
+    
+    // Floating animation
+    img.position.y = 0.5 + Math.sin(time + i) * 0.1;
+    
+    // Look at camera
+    img.lookAt(camera.position);
+    
+    // Scale based on distance from camera
+    const distance = img.position.distanceTo(camera.position);
+    const scale = 1 + (1 - distance / 15) * 0.2;
+    img.scale.setScalar(scale);
+  });
+  
+  // Animate center piece
+  centerMesh.rotation.y = Math.sin(time * 0.5) * 0.1;
+  centerMesh.position.y = 0.5 + Math.sin(time * 0.8) * 0.15;
+  
+  // Animate lights
+  accentLight1.position.x = Math.sin(time * 0.7) * 8;
+  accentLight1.position.z = Math.cos(time * 0.7) * 8;
+  
+  accentLight2.position.x = Math.sin(time * 0.5 + Math.PI) * 8;
+  accentLight2.position.z = Math.cos(time * 0.5 + Math.PI) * 8;
+  
+  // Animate particles
+  if (particleSystem && particlesEnabled) {
+    particleSystem.rotation.y += 0.0005;
+    particleSystem.rotation.x = Math.sin(time * 0.3) * 0.1;
+  }
+  
+  // Update counter
+  updateCounter();
+  
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// ==================== RESPONSIVE ====================
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+// ==================== 2D PARTICLE CANVAS ====================
+const particleCanvas = document.querySelector('.particles');
+const ctx = particleCanvas.getContext('2d');
+
+function resizeParticleCanvas() {
+  particleCanvas.width = window.innerWidth;
+  particleCanvas.height = window.innerHeight;
+}
+resizeParticleCanvas();
+
+const particles2D = [];
+const particleCount2D = 50;
+
+for (let i = 0; i < particleCount2D; i++) {
+  particles2D.push({
+    x: Math.random() * particleCanvas.width,
+    y: Math.random() * particleCanvas.height,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    size: Math.random() * 2 + 1,
+    opacity: Math.random() * 0.5 + 0.2
+  });
+}
+
+function animateParticles2D() {
+  ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+  
+  particles2D.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    
+    if (p.x < 0 || p.x > particleCanvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > particleCanvas.height) p.vy *= -1;
+    
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+    ctx.fill();
+  });
+  
+  requestAnimationFrame(animateParticles2D);
+}
+
+animateParticles2D();
+
+window.addEventListener('resize', resizeParticleCanvas);
+</script>
+
+</body>
+</html>
