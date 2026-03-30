@@ -1,29 +1,17 @@
-[
-  {
-    "name": "Fancode",
-    "url": "https://abmvm23aaaaaaaamjmmec4lqatq7x.ottb.live.cf.ww.aiv-cdn.net/sin-nitro/live/clients/dash-sd/enc/v8g0dlo4z8/out/v1/946019f85dc64ae99ff9ce64a9727a62/cenc-sd.mpd",
-    "keyId": "5689304538fa9f3bb3da99c939a2ad4f",
-    "key": "6907c88ed8ebdd35a2fa80b9684715e1",
-    "verified": true,
-    "badge": "Cricket Live",
-    "badgeColor": "badge-red"
-  },
-  {
-    "name": "Tapmad Live",
-    "url": "https://premierleagpl23.akamaized.net/hls/live/2107108/TapSerie-1@2025/level_1.m3u8",
-    "keyId": "",
-    "key": "",
-    "verified": true,
-    "badge": "Football",
-    "badgeColor": "badge-yellow"
-  },
-  {
-    "name": "Shoq Live",
-    "url": "https://live.shoq.com.pk/live/eds/ICC_Women_World_Cup_2025/DASH/ICC_Women_World_Cup_2025.mpd",
-    "keyId": "a6dfc4f17d70d8d07639659193f03b25",
-    "key": "893eacfabe386144b81733d622a7ad17",
-    "verified": true,
-    "badge": "Women's World Cup",
-    "badgeColor": "badge-green"
-  }
-]
+
+{
+  "channels": [
+    {
+      "name": "My Live Channel",
+      "stream": "https://awslive01.stan.video/out/v1/69407aef32fd48128642a9e5a1e02ee5/index.mpd",
+      "drm": {
+        "kid": "6d885f8f3f564ff39e4dc539078925e0",
+        "key": "a3ed4d07b161477c4d43534f2023bf29"
+      }
+    },
+    {
+      "name": "Free Demo",
+      "stream": "https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd"
+    }
+  ]
+}
