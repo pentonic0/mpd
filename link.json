@@ -2,7 +2,7 @@
   "channels": [
     {
       "name": "Live Channel 1",
-      "stream": "https://awslive01.myappn.video/out/v1/69407aef32fd48128642a9e5a1e02ee5/index.mpd",
+      "stream": "https://awslive01.stan.video/out/v1/69407aef32fd48128642a9e5a1e02ee5/index.mpd",
       "drm": {
         "kid": "6d885f8f3f564ff39e4dc539078925e0",
         "key": "a3ed4d07b161477c4d43534f2023bf29"
