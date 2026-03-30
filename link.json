@@ -2,10 +2,10 @@
   "channels": [
     {
       "name": "Live Channel 1",
-      "stream": "https://awslive01.stan.video/out/v1/69407aef32fd48128642a9e5a1e02ee5/index.mpd",
+      "stream": "https://dash2.antik.sk/stream/nvidia_eurosport2/playlist_cenc.mpd",
       "drm": {
-        "kid": "6d885f8f3f564ff39e4dc539078925e0",
-        "key": "a3ed4d07b161477c4d43534f2023bf29"
+        "kid": "11223344556677889900112233445566",
+        "key": "4b80724d0ef86bcb2c21f7999d67739d"
       }
     },
     {
