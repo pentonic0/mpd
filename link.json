@@ -2,7 +2,7 @@
   "channels": [
     {
       "name": "Live Channel 1",
-      "thumbnail": "https://github.com/pentonic0/mpd/blob/4bbd6f58c1b4ffde580fdadd0d6930aefbb897c4/channels/Eurosport%202.jpg"
+      "thumbnail": "https://github.com/pentonic0/mpd/blob/4bbd6f58c1b4ffde580fdadd0d6930aefbb897c4/channels/Eurosport%202.jpg",
       "stream": "https://dash2.antik.sk/stream/nvidia_eurosport2/playlist_cenc.mpd",
       "drm": {
         "kid": "11223344556677889900112233445566",
