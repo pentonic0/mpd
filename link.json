@@ -2,7 +2,7 @@
   "channels": [
     {
       "name": "Live Channel 1",
-      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Eurosport_2_Logo_%282011-2015%29.svg/1280px-Eurosport_2_Logo_%282011-2015%29.svg.png",
+      "thumbnail": "https://i.postimg.cc/Mp33GNw2/image.jpg",
       "stream": "https://dash2.antik.sk/stream/nvidia_eurosport2/playlist_cenc.mpd",
       "drm": {
         "kid": "11223344556677889900112233445566",
