@@ -11,3 +11,10 @@ https://fancode-bd-srhady.vercel.app/featured_groups___day_1_142021_english.m3u8
 
 #EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Live Sports", Marquee Group   Day 1 | Cadillac Championship 2026 (ENGLISH)
 https://fancode-bd-srhady.vercel.app/marquee_group___day_1_142020_english.m3u8
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Flavio-Cobolli-vs-Alexander-Zverev-old-player-vs-player.png" group-title="Live Sports", Qf: Cobolli Vs Zverev | ATP Masters Mutua Madrid Open 2026 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/qf__cobolli_vs_zverev_141868_english.m3u8
+
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Flavio-Cobolli-vs-Alexander-Zverev-old-player-vs-player.png" group-title="Live Sports", DEMO | ATP Masters Mutua Madrid Open 2026 (ENGLISH)
+https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd
