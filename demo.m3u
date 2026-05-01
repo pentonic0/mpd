@@ -15,6 +15,11 @@ https://fancode-bd-srhady.vercel.app/marquee_group___day_2_142024_english.m3u8
 #EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Jannik-Sinner-vs-Arthur-Fils_FC-Web.png" group-title="Live Sports", Sf: J. Sinner Vs A. Fils | ATP Masters Mutua Madrid Open 2026 (ENGLISH)
 https://fancode-bd-srhady.vercel.app/sf__j__sinner_vs_a__fils_141870_english.m3u8
 
+#EXTINF:-1 tvg-name="Eurosport" tvg-logo="https://i.postimg.cc/Mp33GNw2/image.jpg" group-title="General",Eurosport
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=11223344556677889900112233445566:4b80724d0ef86bcb2c21f7999d67739d
+https://dash2.antik.sk/stream/nvidia_eurosport2/playlist_cenc.mpd
+
 
 #EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Flavio-Cobolli-vs-Alexander-Zverev-old-player-vs-player.png" group-title="Live Sports", DEMO | ATP Masters Mutua Madrid Open 2026 (ENGLISH)
 https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd
