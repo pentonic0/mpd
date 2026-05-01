@@ -1,8 +1,5 @@
 #EXTM3U
 
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Austria-vs-Germany_fc-web.jpg" group-title="Live Sports", Germany Vs Austria | Austria tour of Germany 2026 (ENGLISH)
-https://fancode-bd-srhady.vercel.app/germany_vs_austria_142342_english.m3u8
-
 #EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Live Sports", Main Feed   Day 2 | Cadillac Championship 2026 (ENGLISH)
 https://fancode-bd-srhady.vercel.app/main_feed___day_2_142023_english.m3u8
 
@@ -11,16 +8,3 @@ https://fancode-bd-srhady.vercel.app/featured_groups___day_2_142025_english.m3u8
 
 #EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Live Sports", Marquee Group   Day 2 | Cadillac Championship 2026 (ENGLISH)
 https://fancode-bd-srhady.vercel.app/marquee_group___day_2_142024_english.m3u8
-
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Jannik-Sinner-vs-Arthur-Fils_FC-Web.png" group-title="Live Sports", Sf: J. Sinner Vs A. Fils | ATP Masters Mutua Madrid Open 2026 (ENGLISH)
-https://d1g8wgjurz8via.cloudfront.net/bpk-tv/Zeebangla/default/manifest.mpd?|drmScheme=clearkey&drmLicense=1df83e058b864da896c9288eef63b113%3Afc32f26239054b56aab48225305598fe
-
-#EXTM3U
-#EXTINF:-1 tvg-name="Eurosport" tvg-logo="https://i.postimg.cc/Mp33GNw2/image.jpg"
-https://d1g8wgjurz8via.cloudfront.net/bpk-tv/Zeebangla/default/manifest.mpd?|drmScheme=clearkey&drmLicense=1df83e058b864da896c9288eef63b113%3Afc32f26239054b56aab48225305598fe
-
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Flavio-Cobolli-vs-Alexander-Zverev-old-player-vs-player.png" group-title="Live Sports", DEMO | ATP Masters Mutua Madrid Open 2026 (ENGLISH)
-https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd
-
-#EXTINF:-1 tvg-logo="https://thumbs.dreamstime.com/b/demo-text-businessman-dark-vintage-background-108609906.jpg" group-title="Live Sports", DEMO Cheking
-https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd
