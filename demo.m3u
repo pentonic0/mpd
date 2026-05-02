@@ -1,10 +1,57 @@
 #EXTM3U
 
-#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Mini-Match-Card-(1080x810)-(8)_1777562086648.png" group-title="Live Sports", Speen Ghar Region Vs Boost Region | Super Cola National T20 Cup 2026 (ENGLISH)
-https://fancode-bd-srhady.vercel.app/speen_ghar_region_vs_boost_region_142403_english.m3u8
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Austria-vs-Germany_fc-web.jpg" group-title="Cricket", Germany Vs Austria | Austria tour of Germany 2026 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/germany_vs_austria_142344_english.m3u8
 
-#EXTINF:-1 tvg-logo="https://images.fancode.com/aig/match/v1777548687049/142449_CASACARDS_APP.png" group-title="Live Sports", Auckland Vs Melbourne City | A League 2025-26 (ENGLISH)
-https://fancode-bd-srhady.vercel.app/auckland_vs_melbourne_city_142449_english.m3u8
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/140504_5956_SCD_PFC_FC-Web_1772964305712.jpg" group-title="Football", Sporting Club Delhi Vs Punjab Fc | ISL 2025-26 (ENGLISH) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=5db8f6cd9ab34b5d86dff8eb6c27c1ad:23a8b1b842827c113ebad85d12a3d203
+https://bd-mc-flive.fancode.com/mumbai/140504_english_dash_18068_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/140504_5956_SCD_PFC_FC-Web_1772964305712.jpg" group-title="Football", Sporting Club Delhi Vs Punjab Fc | ISL 2025-26 (HINDI) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=3cf124bf8b2342bbb7ecd54aa7ee1eec:1a45d92761620c7400281092ab09b5c3
+https://bd-mc-flive.fancode.com/mumbai/140504_hindi_dash_65414_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/140504_5956_SCD_PFC_FC-Web_1772964305712.jpg" group-title="Football", Sporting Club Delhi Vs Punjab Fc | ISL 2025-26 (MALAYALAM) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=8776b02f70234ee78170db90664f690c:5aa54220e5403ee5bc521b5fd7687565
+https://bd-mc-flive.fancode.com/mumbai/140504_malayalam_dash_58165_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/140504_5956_SCD_PFC_FC-Web_1772964305712.jpg" group-title="Football", Sporting Club Delhi Vs Punjab Fc | ISL 2025-26 (BENGALI) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=567b7a6da86f454abbf34e503c03d48a:29e4014b4969c78b514cd778f14d7095
+https://bd-mc-flive.fancode.com/mumbai/140504_bengali_dash_64610_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/131168_5427_VAL_ATL_FC-Web.png" group-title="Football", Valencia Cf Vs Atletico De Madrid | LALIGA 2025-26 (ENGLISH) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=82bece419f2d4bf59e0af7f7e9e171f6:8bf1d4ae6efae809b0e564cd7da9a92b
+https://bd-mc-flive.fancode.com/mumbai/131168_english_dash_83680_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/FC_Sports_Default_Football-old-copy.jpg" group-title="Football", Exeter City Vs Bradford City | League One 2025-26 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/exeter_city_vs_bradford_city_142336_english.m3u8
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Golf", Main Feed   Day 3 | Cadillac Championship 2026 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/main_feed___day_3_142027_english.m3u8
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Golf", Featured Groups   Day 3 | Cadillac Championship 2026 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/featured_groups___day_3_142029_english.m3u8
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Golf", Marquee Group   Day 3 | Cadillac Championship 2026 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/marquee_group___day_3_142028_english.m3u8
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Grand-Prix-2026-old-match-card.png" group-title="Formula 1", Sprint | F1 CRYPTO COM MIAMI GRAND PRIX 2026 (ENGLISH) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=189cbe9f6918491cbd29f6877af046c2:0db44d544b096c7d0fc059e0df3f7259
+https://bd-mc-flive.fancode.com/mumbai/139439_english_dash_75577_1drmta-di_h264/index.mpd
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/Miami-Championship-_PGA_Web_1080_x_810.jpg" group-title="Golf", World Feed   Day 3 | Cadillac Championship 2026 (ENGLISH)
+https://fancode-bd-srhady.vercel.app/world_feed___day_3_142026_english.m3u8
+
+#EXTINF:-1 tvg-logo="https://www.fancode.com/skillup-uploads/cms-media/F1_Kids_China_GP_web_1777734590623.jpg" group-title="Motorsports", F1 Kids 2026 | F1 Kids 2026 (ENGLISH) [DRM]
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0cca7ebe39a844e1bf528cda7e704ff6:39ff637f60ca11db8264692e2bb46819
+https://bd-mc-flive.fancode.com/mumbai/142380_english_dash_82008_1drmta-di_h264/index.mpd
 
 #EXTINF:-1 tvg-name="Eurosport" tvg-logo="https://placehold.co/600x400?text=Eurosport" group-title="General",Eurosport
 #KODIPROP:inputstream.adaptive.license_type=clearkey
